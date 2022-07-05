@@ -1,0 +1,37 @@
+# Editor
+.vscode
+.idea/
+
+# Python files
+*__pycache__*
+.pytest_cache
+
+# Mac files
+*.DS_Store
+
+# Test results
+*.dot
+*.dat
+*.svg
+*.perf
+*.info
+*.ckpt
+*.shp
+*.pkl
+*.pb
+.clangd
+
+# Protocol buffers
+*_pb2.py
+*.pb.h
+*.pb.cc
+*.pb
+*_grpc.py
+
+# wight file
+*.pth
+
+# log file
+events.*
+results/log/*
+*.csv
