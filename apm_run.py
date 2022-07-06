@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 23:42:53
-LastEditTime : 2022-07-06 03:00:49
+LastEditTime : 2022-07-06 11:37:46
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -27,12 +27,12 @@ if __name__ == '__main__':
     parser.add_argument('--num_classes', type=int, default=3)
 
     # 训练epoch
-    parser.add_argument('--epoch', type=int, default=150)
+    parser.add_argument('--epoch', type=int, default=200)
     # 超参数, 依据显存设置
     parser.add_argument('--batch_size', type=int,
-                        default=16, help='decide by GPU RAM')
+                        default=24, help='decide by GPU RAM')
     # 学习率参数
-    parser.add_argument('--lr', type=float, default=0.003)
+    parser.add_argument('--lr', type=float, default=0.005)
     parser.add_argument('--lrf', type=float, default=0.005)
 
     # 数据集所在目录

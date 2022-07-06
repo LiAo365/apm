@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 19:45:12
-LastEditTime : 2022-07-05 20:06:32
+LastEditTime : 2022-07-06 11:34:37
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -37,8 +37,7 @@ class ConvBlock(nn.Module):
             norm_layer, nn.BatchNorm2d) else nn.Identity()
         self.act_layer = act_layer(
             inplace=True) if act_layer else nn.Identity()
-        self.pool_layer = pool_layer(
-            kernel_size=kernel_size) if pool_layer else nn.Identity()
+        self.pool_layer = pool_layer if pool_layer else nn.Identity()
 
     def forward(self, x):
         x = self.conv(x)
@@ -190,35 +189,31 @@ class APM(nn.Module):
 
     def __init__(self, in_chs: int, out_chs: int):
         super(APM, self).__init__()
-        self.conv_blocks_1 = ConvBlock(in_chs, 8, kernel_size=13, stride=2, padding=1, dilation=1,
-                                       norm_layer=nn.BatchNorm2d, act_layer=None, pool_layer=None)
-        self.conv_blocks_2 = ConvBlock(8, 32, kernel_size=3, stride=1, padding=1, dilation=1,
-                                       norm_layer=nn.BatchNorm2d, act_layer=None, pool_layer=None)
-        self.res_blocks_1 = Residual(32, 32, kernel_size=[3, 3], stride=[2, 1], padding=[1, 1],
-                                     downsample=True)
-        self.res_blocks_2 = Residual(32, 32, kernel_size=[5, 3], stride=[2, 1], padding=[1, 1],
-                                     downsample=True)
+        self.conv_blocks_1 = ConvBlock(in_chs, 4, kernel_size=13, stride=2, padding=1, dilation=1,
+                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.MaxPool2d(3, stride=1))
+        self.conv_blocks_2 = ConvBlock(4, 16, kernel_size=5, stride=2, padding=1, dilation=1,
+                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.MaxPool2d(3, stride=1))
+        self.conv_blocks_3 = ConvBlock(16, 32, kernel_size=3, stride=2, padding=1, dilation=1,
+                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.MaxPool2d(3, stride=1))
+        self.res_blocks_1 = Residual(32, 32, kernel_size=[3, 3], stride=[1, 1], padding=[1, 1],
+                                     downsample=False)
+        self.res_blocks_2 = Residual(32, 32, kernel_size=[3, 3], stride=[1, 1], padding=[1, 1],
+                                     downsample=False)
         self.cbam_blocks = CBAM(32)
-        self.conv_blocks_3 = ConvBlock(32, 16, kernel_size=3, stride=1, padding=1, dilation=1,
-                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=None)
-        self.conv_blocks_4 = ConvBlock(16, out_chs, kernel_size=3, stride=1, padding=1, dilation=1,
-                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=None)
+        self.conv_blocks_4 = ConvBlock(32, 8, kernel_size=3, stride=1, padding=1, dilation=1,
+                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.AvgPool2d(3, stride=1))
+        self.conv_blocks_5 = ConvBlock(8, out_chs, kernel_size=3, stride=1, padding=1, dilation=1,
+                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.AvgPool2d(3, stride=1))
 
     def forward(self, x):
         x = self.conv_blocks_1(x)
-        # print("After conv block 1 : shape is ", list(x.size()))
         x = self.conv_blocks_2(x)
-        # print("After conv block 2 : shape is ", list(x.size()))
-        x = self.res_blocks_1(x)
-        # print("After res block 1 : shape is ", list(x.size()))
-        x = self.res_blocks_2(x)
-        # print("After res block 2 : shape is ", list(x.size()))
-        x = self.cbam_blocks(x)
-        # print("After cbam block : shape is ", list(x.size()))
         x = self.conv_blocks_3(x)
-        # print("After conv block 3 : shape is ", list(x.size()))
+        x = self.res_blocks_1(x)
+        x = self.res_blocks_2(x)
+        x = self.cbam_blocks(x)
         x = self.conv_blocks_4(x)
-        # print("After conv block 4 : shape is ", list(x.size()))
+        x = self.conv_blocks_5(x)
         return x
 
 

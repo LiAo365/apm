@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-06 03:30:46
+LastEditTime : 2022-07-06 11:36:59
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -73,7 +73,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, loss_weights=N
         accu_loss += loss.detach()
         if not torch.isfinite(loss):
             print(
-                "WARNING: epoch[%d] no-finite loss [%s], ending training ", epoch, loss)
+                "WARNING: epoch{%d} no-finite loss {%s}, ending training ", epoch, loss)
             sys.exit(1)
         step += 1
         images, labels = prefetcher.next()
