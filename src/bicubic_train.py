@@ -2,14 +2,14 @@
 # coding=utf-8
 '''
 Author       : LiAo
-Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-06 13:46:57
+Date         : 2022-07-06 14:27:33
+LastEditTime : 2022-07-06 14:58:28
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
-
 import os
 import sys
+import timm
 from typing import Dict, Tuple
 import torch
 import torch.nn as nn
@@ -22,7 +22,6 @@ from torchtools.optim import RangerLars
 from sklearn.metrics import classification_report
 from torch.utils.tensorboard import SummaryWriter
 from src import utils
-from src import apm
 import warnings
 warnings.filterwarnings('ignore')
 # 设置torch的随机数种子
@@ -132,6 +131,8 @@ def main(args):
     # 定义数据预处理
     data_transform = transforms.Compose([
         utils.SelfCLAHE(clip_limit=4.0, tile_grid_size=(32, 32)),
+        transforms.Resize(
+            size=(260, 453), interpolation=transforms.InterpolationMode.BICUBIC),
         transforms.ToTensor()
     ])
     # log是tensorboard的记录路径
@@ -142,7 +143,7 @@ def main(args):
     # 最优权重保存路径
     utils.path_exist(args.weight_path)
     # 数据加载的线程数
-    num_workers = 8
+    num_workers = 4
     # 超参数
     batch_size = args.batch_size
     # 保存测试集上的结果
@@ -161,28 +162,17 @@ def main(args):
     test_loader = DataLoader(dataset=testset, batch_size=batch_size, shuffle=True,
                              pin_memory=True, num_workers=num_workers)
 
-    # 模型创建
-    def new_module():
-        """依据args参数创建模型"""
-        model = apm.MultiClassification(
-            backbone=args.backbone,
-            pretrain=args.backbone_pretrain,
-            num_classes=args.num_classes,
-            pool=args.pool,
-            pool_size=args.pool_size,
-            pool_type=args.pool_type)
-        return model
     # 如果指定weight_path则依据weight_path加载权重进行训练
-    load_weight_path = args.load_weight_path
-    model = new_module() if load_weight_path is None else torch.load(load_weight_path)
+    model = timm.create_model(
+        args.backbone, pretrained=args.backbone_pretrain, num_classes=args.num_classes)
     model = model.to(device)
 
     # 定义optimizer
     optimizer = RangerLars(model.parameters(), lr=args.lr,
-                           eps=1e-5, weight_decay=args.weight_decay)
+                           eps=1e-6, weight_decay=args.weight_decay)
     # 学习率随着训练epoch周期变化
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10,
-                                               verbose=False, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=1e-08, eps=1e-06)
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5,
+                                               verbose=True, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=1e-05, eps=1e-08)
     best_acc = 0.0
     for epoch in range(args.epoch):
         # train

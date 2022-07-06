@@ -2,15 +2,16 @@
 # coding=utf-8
 '''
 Author       : LiAo
-Date         : 2022-07-05 23:42:53
-LastEditTime : 2022-07-06 14:51:05
+Date         : 2022-07-06 14:50:02
+LastEditTime : 2022-07-06 14:59:53
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
+
 import argparse
 import os
 from src import train
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 
 if __name__ == '__main__':
 
@@ -42,12 +43,12 @@ if __name__ == '__main__':
     parser.add_argument('--load_weight_path', type=str, default=None)
     # 数据保存的路径
     parser.add_argument('--weight_path', type=str,
-                        default='/data/liao/code/apm/result/apm/weight/')
+                        default='/data/liao/code/apm/result/bicubic/weight/')
     parser.add_argument('--log_path', type=str,
-                        default='/data/liao/code/apm/result/apm/log/')
+                        default='/data/liao/code/apm/result/bicubic/log/')
     parser.add_argument('--model', type=str, default='apm')
     parser.add_argument('--result_path', type=str,
-                        default='/data/liao/code/apm/result/apm/result/')
+                        default='/data/liao/code/apm/result/bicubic/result/')
 
     parser.add_argument('--device', default='cuda',
                         help='device id(i.e. 0 or 0, 1 or cpu)')

@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 19:52:11
-LastEditTime : 2022-07-06 02:04:29
+LastEditTime : 2022-07-06 13:41:32
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -58,7 +58,7 @@ def move_data(origin_path: str, target_path: str):
 
 
 class SelfCLAHE(object):
-    def __init__(self, clip_limit=4.0, tile_grid_size=(32, 32)):
+    def __init__(self, clip_limit=2.0, tile_grid_size=(64, 64)):
         """自适应直方图均衡化
 
         Args:
