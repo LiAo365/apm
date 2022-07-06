@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-06 13:46:57
+LastEditTime : 2022-07-06 21:10:41
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -181,8 +181,8 @@ def main(args):
     optimizer = RangerLars(model.parameters(), lr=args.lr,
                            eps=1e-5, weight_decay=args.weight_decay)
     # 学习率随着训练epoch周期变化
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10,
-                                               verbose=False, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=1e-08, eps=1e-06)
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=20,
+                                               verbose=True, cooldown=5, min_lr=1e-04, eps=1e-06)
     best_acc = 0.0
     for epoch in range(args.epoch):
         # train
