@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-06 14:50:02
-LastEditTime : 2022-07-06 14:59:53
+LastEditTime : 2022-07-06 22:05:27
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -11,7 +11,7 @@ Description  : Please add file description
 import argparse
 import os
 from src import train
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 if __name__ == '__main__':
 
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument('--epoch', type=int, default=100)
     # 超参数, 依据显存设置
     parser.add_argument('--batch_size', type=int,
-                        default=24, help='decide by GPU RAM')
+                        default=6, help='decide by GPU RAM')
     # 学习率参数
     parser.add_argument('--lr', type=float, default=0.005)
     parser.add_argument('--lrf', type=float, default=0.005)

@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-06 21:10:41
+LastEditTime : 2022-07-06 22:02:54
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -131,7 +131,7 @@ def main(args):
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
     # 定义数据预处理
     data_transform = transforms.Compose([
-        utils.SelfCLAHE(clip_limit=4.0, tile_grid_size=(32, 32)),
+        utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(64, 64)),
         transforms.ToTensor()
     ])
     # log是tensorboard的记录路径

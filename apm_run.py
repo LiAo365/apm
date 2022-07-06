@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 23:42:53
-LastEditTime : 2022-07-06 14:51:05
+LastEditTime : 2022-07-06 21:54:18
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     parser.add_argument('--epoch', type=int, default=100)
     # 超参数, 依据显存设置
     parser.add_argument('--batch_size', type=int,
-                        default=24, help='decide by GPU RAM')
+                        default=16, help='decide by GPU RAM')
     # 学习率参数
     parser.add_argument('--lr', type=float, default=0.005)
     parser.add_argument('--lrf', type=float, default=0.005)

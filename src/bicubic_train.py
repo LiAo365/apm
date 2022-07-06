@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-06 14:27:33
-LastEditTime : 2022-07-06 21:11:50
+LastEditTime : 2022-07-06 22:02:43
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -130,9 +130,9 @@ def main(args):
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
     # 定义数据预处理
     data_transform = transforms.Compose([
-        utils.SelfCLAHE(clip_limit=4.0, tile_grid_size=(32, 32)),
+        utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(32, 32)),
         transforms.Resize(
-            size=(260, 453), interpolation=transforms.InterpolationMode.BICUBIC),
+            size=(260, 260), interpolation=transforms.InterpolationMode.BICUBIC),
         transforms.ToTensor()
     ])
     # log是tensorboard的记录路径
@@ -157,10 +157,10 @@ def main(args):
         classes=classes, class_to_idx=class_to_idx, samples=train_samples, transform=data_transform, loader=utils.gray_loader)
     testset = utils.SplitDataSet(
         classes=classes, class_to_idx=class_to_idx, samples=test_samples, transform=data_transform, loader=utils.gray_loader)
-    train_loader = DataLoader(dataset=trainset, batch_size=batch_size, shuffle=True,
-                              pin_memory=True, num_workers=num_workers)
-    test_loader = DataLoader(dataset=testset, batch_size=batch_size, shuffle=True,
-                             pin_memory=True, num_workers=num_workers)
+    train_loader = DataLoader(
+        dataset=trainset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    test_loader = DataLoader(
+        dataset=testset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
 
     # 如果指定weight_path则依据weight_path加载权重进行训练
     model = timm.create_model(
