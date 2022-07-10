@@ -3,128 +3,27 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-10 23:24:12
+LastEditTime : 2022-07-11 00:02:50
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
 
 import os
-import sys
-from typing import Dict, Tuple
 import torch
-import torch.nn as nn
 import pandas as pd
-import numpy as np
 from torchvision import transforms
+import torch.optim.lr_scheduler as lr_scheduler
 from torch.utils.data import DataLoader
 # from torchtools.optim import RangerLars
-from torch.optim import lr_scheduler
 from sklearn.metrics import classification_report
 from torch.utils.tensorboard import SummaryWriter
 from src import utils
+from src import train_utils
 from src import apm
 import warnings
 warnings.filterwarnings('ignore')
 # 设置torch的随机数种子
 torch.manual_seed(123)
-
-
-def train_one_epoch(model, optimizer, data_loader, device, epoch, loss_weights=None) -> Tuple[float, float]:
-    """训练一轮
-
-    Args:
-        model (nn.Module): 模型对象
-        optimizer (_type_): 优化器
-        data_loader (_type_): data loader
-        device (_type_): cpu or cuda
-        epoch (_type_): epoch
-        loss_weights (_type_, optional): loss是否添加权重. Defaults to None.
-
-    Returns:
-        Tuple[float, float]: 返回训练的loss 和 acc
-    """
-    torch.cuda.empty_cache()
-    model.train()
-    # 设置loss function
-    loss_function = nn.CrossEntropyLoss() if loss_weights is None else nn.CrossEntropyLoss(
-        weight=torch.tensor(loss_weights))
-    # 累计损失
-    accu_loss = torch.zeros(1).to(device)
-    # 累计预测正确的样本数目
-    accu_num = torch.zeros(1).to(device)
-    # epoch的样本个数
-    sample_num = 0
-    step = 0
-    prefetcher = utils.DataPrefetcher(data_loader)
-    images, labels = prefetcher.next()
-    while images is not None:
-        sample_num += images.shape[0]
-        # 梯度置零
-        optimizer.zero_grad()
-        pred = model(images.to(device))
-        pred_classes = torch.max(pred, dim=1)[1]
-        accu_num += torch.eq(pred_classes, labels.to(device)).sum()
-
-        # forward + backward + optimize
-        loss = loss_function(pred, labels.to(device))
-        loss.backward()
-        optimizer.step()
-
-        accu_loss += loss.detach()
-        if not torch.isfinite(loss):
-            print(
-                "WARNING: epoch{%d} no-finite loss {%s}, ending training ", epoch, loss)
-            sys.exit(1)
-        step += 1
-        images, labels = prefetcher.next()
-    # 返回训练的loss 和 acc
-    return accu_loss.item() / (step + 1), accu_num.item() / sample_num
-
-
-@ torch.no_grad()
-def test_model(model, data_loader, device, loss_weights=None) -> Tuple[float, float, Dict[str, np.array]]:
-    """模型测试
-
-    Args:
-        model (nn.Module): 模型对象
-        data_loader (_type_): data_loader
-        device (_type_): cpu or cuda
-        loss_weights (_type_):  loss是否添加权重
-
-    Returns:
-        Tuple[float, float, Dict[str, np.array]]: 返回测试的loss、acc、预测标签与真实标签的字典存储
-    """
-    torch.cuda.empty_cache()
-    loss_function = nn.CrossEntropyLoss() if loss_weights is None else nn.CrossEntropyLoss(
-        weight=torch.tensor(loss_weights))
-    model.eval()
-    # 累计损失
-    accu_loss = torch.zeros(1).to(device)
-    # 累计预测正确的样本数目
-    accu_num = torch.zeros(1).to(device)
-    sample_num = 0
-    test_result = {'labels': np.array(
-        [], dtype='u1'), 'preds': np.array([], dtype='u1')}
-    prefetcher = utils.DataPrefetcher(data_loader)
-    images, labels = prefetcher.next()
-    step = 0
-    while images is not None:
-        test_result['labels'] = np.concatenate(
-            (test_result['labels'], np.array(labels.cpu(), dtype='u1')))
-        sample_num += images.shape[0]
-
-        pred = model(images.to(device))
-        pred_classes = torch.max(pred, dim=1)[1]
-        accu_num += torch.eq(pred_classes, labels.to(device)).sum()
-        test_result['preds'] = np.concatenate(
-            (test_result['preds'], np.array(pred_classes.cpu(), dtype='u1')))
-
-        loss = loss_function(pred, labels.to(device))
-        accu_loss += loss
-        step += 1
-        images, labels = prefetcher.next()
-    torch.cuda.empty_cache()
-    return accu_loss.item() / (step + 1), accu_num.item() / sample_num, test_result
 
 
 def main(args):
@@ -193,7 +92,7 @@ def main(args):
     epoch_offset = args.epoch_offset
     for epoch in range(epoch_offset, epoch_offset + args.epoch):
         # train
-        train_loss, train_acc = train_one_epoch(
+        train_loss, train_acc = train_utils.train_one_epoch(
             model=model,
             optimizer=optimizer,
             data_loader=train_loader,
@@ -201,7 +100,7 @@ def main(args):
             epoch=epoch
         )
         # test
-        test_loss, test_acc, epoch_test_result = test_model(
+        test_loss, test_acc, epoch_test_result = train_utils.test_model(
             model=model,
             data_loader=test_loader,
             device=device)

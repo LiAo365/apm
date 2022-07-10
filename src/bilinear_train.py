@@ -2,8 +2,8 @@
 # coding=utf-8
 '''
 Author       : LiAo
-Date         : 2022-07-06 14:27:33
-LastEditTime : 2022-07-11 00:21:57
+Date         : 2022-07-10 23:48:30
+LastEditTime : 2022-07-11 00:22:03
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -31,7 +31,7 @@ def main(args):
     data_transform = transforms.Compose([
         utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(32, 32)),
         transforms.Resize(
-            size=(260, 260), interpolation=transforms.InterpolationMode.BICUBIC),
+            size=(260, 260), interpolation=transforms.InterpolationMode.BILINEAR),
         transforms.ToTensor()
     ])
     # log是tensorboard的记录路径
