@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 23:42:53
-LastEditTime : 2022-07-06 21:54:18
+LastEditTime : 2022-07-10 00:12:26
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -27,7 +27,8 @@ if __name__ == '__main__':
     parser.add_argument('--num_classes', type=int, default=3)
 
     # 训练epoch
-    parser.add_argument('--epoch', type=int, default=100)
+    parser.add_argument('--epoch', type=int, default=200)
+    parser.add_argument('--epoch_offset', type=int, default=0)
     # 超参数, 依据显存设置
     parser.add_argument('--batch_size', type=int,
                         default=16, help='decide by GPU RAM')
@@ -39,7 +40,8 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', type=str,
                         default='/data/liao/datasets/cqu_2021_abnormal/')
     # 权重加载路径
-    parser.add_argument('--load_weight_path', type=str, default=None)
+    parser.add_argument('--load_weight_path', type=str,
+                        default=None)  # /data/liao/code/apm/result/apm/weight/best_weight.pth
     # 数据保存的路径
     parser.add_argument('--weight_path', type=str,
                         default='/data/liao/code/apm/result/apm/weight/')

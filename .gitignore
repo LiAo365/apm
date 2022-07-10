@@ -35,3 +35,6 @@
 events.*
 results/log/*
 *.csv
+
+# images files
+*.jpg

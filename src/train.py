@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-06 22:02:54
+LastEditTime : 2022-07-10 00:04:28
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -16,7 +16,6 @@ import torch.nn as nn
 import pandas as pd
 import numpy as np
 from torchvision import transforms
-import torch.optim.lr_scheduler as lr_scheduler
 from torch.utils.data import DataLoader
 from torchtools.optim import RangerLars
 from sklearn.metrics import classification_report
@@ -146,7 +145,9 @@ def main(args):
     # 超参数
     batch_size = args.batch_size
     # 保存测试集上的结果
-    test_result_pd = pd.DataFrame()
+    test_result_path = os.path.join(args.result_path, 'test_result.csv')
+    test_result_pd = pd.read_csv(test_result_path) if os.path.exists(
+        test_result_path) else pd.DataFrame()
     allsamples = utils.AllImageFolder(root=args.dataset)
     # 类别的标签, test时保存结果需要对应各个类别
     classes = allsamples.get_classes()
@@ -181,10 +182,11 @@ def main(args):
     optimizer = RangerLars(model.parameters(), lr=args.lr,
                            eps=1e-5, weight_decay=args.weight_decay)
     # 学习率随着训练epoch周期变化
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=20,
-                                               verbose=True, cooldown=5, min_lr=1e-04, eps=1e-06)
+    # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=20,
+    #                                            verbose=True, cooldown=5, min_lr=1e-04, eps=1e-06)
     best_acc = 0.0
-    for epoch in range(args.epoch):
+    epoch_offset = args.epoch_offset
+    for epoch in range(epoch_offset, epoch_offset + args.epoch):
         # train
         train_loss, train_acc = train_one_epoch(
             model=model,
@@ -199,7 +201,7 @@ def main(args):
             data_loader=test_loader,
             device=device)
         # 学习率的调整
-        scheduler.step(test_loss)
+        # scheduler.step(test_loss)
 
         # 保存测试集的测试结果
         epoch_test_result_dict = classification_report(
@@ -239,3 +241,10 @@ def test_classification_report():
         labels, preds, target_names=['a', 'b', 'c', 'd'], zero_division=0, output_dict=True, digits=6)
     print(report)
     print(report['a']['precision'])
+
+
+def test_convert_static_module():
+    best_weight = "/data/liao/code/apm/result/apm/weight/best_weight.pth"
+    static_path = "/data/liao/code/apm/result/apm/weight/static_best_weight.pth"
+    model = torch.load(best_weight)
+    torch.save(model.state_dict(), static_path)
