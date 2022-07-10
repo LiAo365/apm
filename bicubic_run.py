@@ -10,7 +10,7 @@ Description  : Please add file description
 
 import argparse
 import os
-from src import train
+from src import apm_train
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 if __name__ == '__main__':
@@ -56,4 +56,4 @@ if __name__ == '__main__':
     opt = parser.parse_args(args=[])
 
     # 执行训练和测试
-    train.main(opt)
+    apm_train.main(opt)

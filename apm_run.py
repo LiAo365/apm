@@ -3,13 +3,13 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 23:42:53
-LastEditTime : 2022-07-10 00:12:26
+LastEditTime : 2022-07-10 23:23:18
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
 import argparse
 import os
-from src import train
+from src import apm_train
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 if __name__ == '__main__':
@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser.add_argument('--pool_size', type=tuple, default=(320, 320))
     parser.add_argument('--pool_type', type=str,
                         default='avg', help='must one of (max, avg)')
-    parser.add_argument('--weight_decay', type=float, default=0.00)
+    parser.add_argument('--weight_decay', type=float, default=1e-5)
     # 分类数目
     parser.add_argument('--num_classes', type=int, default=3)
 
@@ -34,6 +34,7 @@ if __name__ == '__main__':
                         default=16, help='decide by GPU RAM')
     # 学习率参数
     parser.add_argument('--lr', type=float, default=0.005)
+    # used for RangeLars
     parser.add_argument('--lrf', type=float, default=0.005)
 
     # 数据集所在目录
@@ -57,4 +58,4 @@ if __name__ == '__main__':
     opt = parser.parse_args(args=[])
 
     # 执行训练和测试
-    train.main(opt)
+    apm_train.main(opt)

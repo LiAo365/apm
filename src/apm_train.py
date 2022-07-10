@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-10 00:04:28
+LastEditTime : 2022-07-10 23:24:12
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -17,7 +17,8 @@ import pandas as pd
 import numpy as np
 from torchvision import transforms
 from torch.utils.data import DataLoader
-from torchtools.optim import RangerLars
+# from torchtools.optim import RangerLars
+from torch.optim import lr_scheduler
 from sklearn.metrics import classification_report
 from torch.utils.tensorboard import SummaryWriter
 from src import utils
@@ -179,11 +180,15 @@ def main(args):
     model = model.to(device)
 
     # 定义optimizer
-    optimizer = RangerLars(model.parameters(), lr=args.lr,
-                           eps=1e-5, weight_decay=args.weight_decay)
+    # optimizer = RangerLars(model.parameters(), lr=args.lr,
+    #                        eps=1e-5, weight_decay=args.weight_decay)
+    optimizer = torch.optim.SGD(
+        params=model.parameters(), lr=args.lr, momentum=0.95, weight_decay=args.weight_decay)
     # 学习率随着训练epoch周期变化
     # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=20,
     #                                            verbose=True, cooldown=5, min_lr=1e-04, eps=1e-06)
+    scheduler = lr_scheduler.CosineAnnealingWarmRestarts(
+        optimizer=optimizer, T_0=5, T_mult=1, eta_min=1e-5)
     best_acc = 0.0
     epoch_offset = args.epoch_offset
     for epoch in range(epoch_offset, epoch_offset + args.epoch):
@@ -202,6 +207,7 @@ def main(args):
             device=device)
         # 学习率的调整
         # scheduler.step(test_loss)
+        scheduler.step()
 
         # 保存测试集的测试结果
         epoch_test_result_dict = classification_report(
