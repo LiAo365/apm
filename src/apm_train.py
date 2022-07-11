@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-11 00:02:50
+LastEditTime : 2022-07-11 10:34:23
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -14,7 +14,7 @@ import pandas as pd
 from torchvision import transforms
 import torch.optim.lr_scheduler as lr_scheduler
 from torch.utils.data import DataLoader
-# from torchtools.optim import RangerLars
+from torchtools.optim import RangerLars
 from sklearn.metrics import classification_report
 from torch.utils.tensorboard import SummaryWriter
 from src import utils
@@ -79,10 +79,10 @@ def main(args):
     model = model.to(device)
 
     # 定义optimizer
-    # optimizer = RangerLars(model.parameters(), lr=args.lr,
-    #                        eps=1e-5, weight_decay=args.weight_decay)
-    optimizer = torch.optim.SGD(
-        params=model.parameters(), lr=args.lr, momentum=0.95, weight_decay=args.weight_decay)
+    optimizer = RangerLars(model.parameters(), lr=args.lr,
+                           eps=1e-5, weight_decay=args.weight_decay)
+    # optimizer = torch.optim.SGD(
+    #     params=model.parameters(), lr=args.lr, momentum=0.95, weight_decay=args.weight_decay)
     # 学习率随着训练epoch周期变化
     # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=20,
     #                                            verbose=True, cooldown=5, min_lr=1e-04, eps=1e-06)
