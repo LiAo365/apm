@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-11 10:34:23
+LastEditTime : 2022-07-11 12:09:03
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -87,7 +87,7 @@ def main(args):
     # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=20,
     #                                            verbose=True, cooldown=5, min_lr=1e-04, eps=1e-06)
     scheduler = lr_scheduler.CosineAnnealingWarmRestarts(
-        optimizer=optimizer, T_0=5, T_mult=1, eta_min=1e-5)
+        optimizer=optimizer, T_0=5, T_mult=2, eta_min=1e-5)
     best_acc = 0.0
     epoch_offset = args.epoch_offset
     for epoch in range(epoch_offset, epoch_offset + args.epoch):
