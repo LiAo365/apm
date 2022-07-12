@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-10 23:35:51
-LastEditTime : 2022-07-11 00:08:13
+LastEditTime : 2022-07-12 09:31:08
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -45,12 +45,12 @@ if __name__ == '__main__':
                         default=None)  # /data/liao/code/apm/result/apm/weight/best_weight.pth
     # 数据保存的路径
     parser.add_argument('--weight_path', type=str,
-                        default='/data/liao/code/apm/result/apm_conv/weight/')
+                        default='/data/liao/code/apm/result/apm_cbam/weight/')
     parser.add_argument('--log_path', type=str,
-                        default='/data/liao/code/apm/result/apm_conv/log/')
+                        default='/data/liao/code/apm/result/apm_cbam/log/')
     parser.add_argument('--model', type=str, default='apm')
     parser.add_argument('--result_path', type=str,
-                        default='/data/liao/code/apm/result/apm_conv/result/')
+                        default='/data/liao/code/apm/result/apm_cbam/result/')
 
     parser.add_argument('--device', default='cuda',
                         help='device id(i.e. 0 or 0, 1 or cpu)')
