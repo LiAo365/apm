@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-10 23:50:11
-LastEditTime : 2022-07-10 23:50:13
+LastEditTime : 2022-07-13 23:33:19
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -16,7 +16,7 @@ from src import utils
 import warnings
 warnings.filterwarnings('ignore')
 # 设置torch的随机数种子
-torch.manual_seed(123)
+torch.manual_seed(0)
 
 
 def train_one_epoch(model, optimizer, data_loader, device, epoch, loss_weights=None) -> Tuple[float, float]:

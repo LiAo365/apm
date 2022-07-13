@@ -3,14 +3,14 @@
 '''
 Author       : LiAo
 Date         : 2022-07-10 23:35:51
-LastEditTime : 2022-07-12 09:31:08
+LastEditTime : 2022-07-12 10:52:57
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
 import argparse
 import os
 from src import apm_cbam_train
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 if __name__ == '__main__':
 

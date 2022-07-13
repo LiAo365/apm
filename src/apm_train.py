@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-11 12:09:03
+LastEditTime : 2022-07-13 23:40:40
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -12,9 +12,9 @@ import os
 import torch
 import pandas as pd
 from torchvision import transforms
-import torch.optim.lr_scheduler as lr_scheduler
 from torch.utils.data import DataLoader
 from torchtools.optim import RangerLars
+from torch.optim import lr_scheduler
 from sklearn.metrics import classification_report
 from torch.utils.tensorboard import SummaryWriter
 from src import utils
@@ -23,14 +23,13 @@ from src import apm
 import warnings
 warnings.filterwarnings('ignore')
 # 设置torch的随机数种子
-torch.manual_seed(123)
+torch.manual_seed(0)
 
 
 def main(args):
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
     # 定义数据预处理
     data_transform = transforms.Compose([
-        utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(64, 64)),
         transforms.ToTensor()
     ])
     # log是tensorboard的记录路径
@@ -41,7 +40,7 @@ def main(args):
     # 最优权重保存路径
     utils.path_exist(args.weight_path)
     # 数据加载的线程数
-    num_workers = 8
+    num_workers = 4
     # 超参数
     batch_size = args.batch_size
     # 保存测试集上的结果
@@ -79,15 +78,18 @@ def main(args):
     model = model.to(device)
 
     # 定义optimizer
+    # total_steps = int(trainset.__len__() / batch_size) * args.epoch
     optimizer = RangerLars(model.parameters(), lr=args.lr,
                            eps=1e-5, weight_decay=args.weight_decay)
     # optimizer = torch.optim.SGD(
     #     params=model.parameters(), lr=args.lr, momentum=0.95, weight_decay=args.weight_decay)
     # 学习率随着训练epoch周期变化
-    # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=20,
-    #                                            verbose=True, cooldown=5, min_lr=1e-04, eps=1e-06)
-    scheduler = lr_scheduler.CosineAnnealingWarmRestarts(
-        optimizer=optimizer, T_0=5, T_mult=2, eta_min=1e-5)
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10,
+                                               verbose=False, cooldown=5, min_lr=1e-04, eps=1e-08, threshold=0.0001, threshold_mode='rel')
+    # scheduler = lr_scheduler.CosineAnnealingWarmRestarts(
+    #     optimizer=optimizer, T_0=5, T_mult=2, eta_min=1e-5)
+    # scheduler = utils.flat_and_anneal(
+    #     optimizer=optimizer, total_steps=total_steps, ann_start=args.ann_start)
     best_acc = 0.0
     epoch_offset = args.epoch_offset
     for epoch in range(epoch_offset, epoch_offset + args.epoch):
@@ -105,8 +107,8 @@ def main(args):
             data_loader=test_loader,
             device=device)
         # 学习率的调整
-        # scheduler.step(test_loss)
-        scheduler.step()
+        scheduler.step(test_loss)
+        # scheduler.step()
 
         # 保存测试集的测试结果
         epoch_test_result_dict = classification_report(

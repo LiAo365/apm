@@ -3,14 +3,14 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 23:42:53
-LastEditTime : 2022-07-10 23:23:18
+LastEditTime : 2022-07-13 23:39:44
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
 import argparse
 import os
 from src import apm_train
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 
 if __name__ == '__main__':
 
@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser.add_argument('--pool_size', type=tuple, default=(320, 320))
     parser.add_argument('--pool_type', type=str,
                         default='avg', help='must one of (max, avg)')
-    parser.add_argument('--weight_decay', type=float, default=1e-5)
+    parser.add_argument('--weight_decay', type=float, default=0.00)
     # 分类数目
     parser.add_argument('--num_classes', type=int, default=3)
 
@@ -31,11 +31,12 @@ if __name__ == '__main__':
     parser.add_argument('--epoch_offset', type=int, default=0)
     # 超参数, 依据显存设置
     parser.add_argument('--batch_size', type=int,
-                        default=16, help='decide by GPU RAM')
+                        default=8, help='decide by GPU RAM')
     # 学习率参数
     parser.add_argument('--lr', type=float, default=0.005)
     # used for RangeLars
     parser.add_argument('--lrf', type=float, default=0.005)
+    parser.add_argument('--ann_start', type=float, default=0.5)
 
     # 数据集所在目录
     parser.add_argument('--dataset', type=str,
@@ -45,12 +46,12 @@ if __name__ == '__main__':
                         default=None)  # /data/liao/code/apm/result/apm/weight/best_weight.pth
     # 数据保存的路径
     parser.add_argument('--weight_path', type=str,
-                        default='/data/liao/code/apm/result/apm/weight/')
+                        default='/data/liao/code/apm/result/apm_rangerlars_01/weight/')
     parser.add_argument('--log_path', type=str,
-                        default='/data/liao/code/apm/result/apm/log/')
+                        default='/data/liao/code/apm/result/apm_rangerlars_01/log/')
     parser.add_argument('--model', type=str, default='apm')
     parser.add_argument('--result_path', type=str,
-                        default='/data/liao/code/apm/result/apm/result/')
+                        default='/data/liao/code/apm/result/apm_rangerlars_01/result/')
 
     parser.add_argument('--device', default='cuda',
                         help='device id(i.e. 0 or 0, 1 or cpu)')

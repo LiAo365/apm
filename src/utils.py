@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 19:52:11
-LastEditTime : 2022-07-06 21:38:55
+LastEditTime : 2022-07-12 23:21:00
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -307,6 +307,50 @@ class StochasticPool2d(nn.Module):
         x = x.contiguous().view(init_size[0], init_size[1], int(
             init_size[2] / 2), int(init_size[3] / 2))
         return x
+
+
+def d(x):
+    return 1
+
+
+class ConcatLR(torch.optim.lr_scheduler._LRScheduler):
+    def __init__(self, optimizer, scheduler1, scheduler2, total_steps, pct_start=0.5, last_epoch=-1):
+        self.scheduler1 = scheduler1
+        self.scheduler2 = scheduler2
+        self.step_start = float(pct_start * total_steps) - 1
+        super(ConcatLR, self).__init__(optimizer, last_epoch)
+
+    def step(self):
+        if self.last_epoch <= self.step_start:
+            self.scheduler1.step()
+        else:
+            self.scheduler2.step()
+        super().step()
+
+    def get_lr(self):
+        if self.last_epoch <= self.step_start:
+            return self.scheduler1.get_lr()
+        else:
+            return self.scheduler2.get_lr()
+
+
+def flat_and_anneal(optimizer, total_steps: int, ann_start: float = 0.5):
+    """_summary_
+
+    Args:
+        optimizer (_type_): optimizer
+        total_steps (int): (dataset.len() / batch_szie)) * epoch
+        ann_start (float): default = 0.5
+
+    Returns:
+        scheduler: a scheduler
+    """
+    dummy = torch.optim.lr_scheduler.LambdaLR(optimizer, d)
+    cosine = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer, int(total_steps * (1 - ann_start)))
+    scheduler = ConcatLR(optimizer, dummy, cosine,
+                         total_steps, ann_start)
+    return scheduler
 
 
 def test_shuffle_list():

@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-06 14:50:02
-LastEditTime : 2022-07-11 00:11:06
+LastEditTime : 2022-07-12 23:40:46
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -31,7 +31,7 @@ def bicubic_train_main():
     parser.add_argument('--epoch', type=int, default=100)
     # 超参数, 依据显存设置
     parser.add_argument('--batch_size', type=int,
-                        default=6, help='decide by GPU RAM')
+                        default=16, help='decide by GPU RAM')
     # 学习率参数
     parser.add_argument('--lr', type=float, default=0.005)
     parser.add_argument('--lrf', type=float, default=0.005)
@@ -76,7 +76,7 @@ def bilinear_train_main():
     parser.add_argument('--epoch', type=int, default=100)
     # 超参数, 依据显存设置
     parser.add_argument('--batch_size', type=int,
-                        default=6, help='decide by GPU RAM')
+                        default=16, help='decide by GPU RAM')
     # 学习率参数
     parser.add_argument('--lr', type=float, default=0.005)
     parser.add_argument('--lrf', type=float, default=0.005)
@@ -121,7 +121,7 @@ def lanczos_train_main():
     parser.add_argument('--epoch', type=int, default=100)
     # 超参数, 依据显存设置
     parser.add_argument('--batch_size', type=int,
-                        default=6, help='decide by GPU RAM')
+                        default=16, help='decide by GPU RAM')
     # 学习率参数
     parser.add_argument('--lr', type=float, default=0.005)
     parser.add_argument('--lrf', type=float, default=0.005)
