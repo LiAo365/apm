@@ -80,7 +80,7 @@ def main(args):
     # optimizer = torch.optim.Adadelta(
     #     model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     optimizer = RangerLars(model.parameters(), lr=args.lr,
-                           eps=1e-6, weight_decay=args.weight_decay)
+                           weight_decay=args.weight_decay)
     # optimizer = torch.optim.SGD(
     #     params=model.parameters(), lr=args.lr, momentum=0.95, weight_decay=args.weight_decay)
     # 学习率随着训练epoch周期变化
