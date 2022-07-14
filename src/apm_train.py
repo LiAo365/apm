@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-13 23:40:40
+LastEditTime : 2022-07-14 14:24:30
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -79,17 +79,21 @@ def main(args):
 
     # 定义optimizer
     # total_steps = int(trainset.__len__() / batch_size) * args.epoch
+    optimizer = torch.optim.Adadelta(
+        model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     optimizer = RangerLars(model.parameters(), lr=args.lr,
                            eps=1e-5, weight_decay=args.weight_decay)
     # optimizer = torch.optim.SGD(
     #     params=model.parameters(), lr=args.lr, momentum=0.95, weight_decay=args.weight_decay)
     # 学习率随着训练epoch周期变化
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10,
-                                               verbose=False, cooldown=5, min_lr=1e-04, eps=1e-08, threshold=0.0001, threshold_mode='rel')
+    # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10,
+    #                                            verbose=False, cooldown=5, min_lr=1e-04, eps=1e-08, threshold=0.0001, threshold_mode='rel')
     # scheduler = lr_scheduler.CosineAnnealingWarmRestarts(
     #     optimizer=optimizer, T_0=5, T_mult=2, eta_min=1e-5)
     # scheduler = utils.flat_and_anneal(
     #     optimizer=optimizer, total_steps=total_steps, ann_start=args.ann_start)
+    scheduler = lr_scheduler.StepLR(
+        optimizer=optimizer, step_size=20, gamma=0.1)
     best_acc = 0.0
     epoch_offset = args.epoch_offset
     for epoch in range(epoch_offset, epoch_offset + args.epoch):
