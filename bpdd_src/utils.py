@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 19:52:11
-LastEditTime : 2022-07-14 14:42:55
+LastEditTime : 2022-07-14 15:04:57
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -27,9 +27,6 @@ def setup_seed(seed: int = 0):
     np.random.seed(seed)
     torch.backends.cudnn.deterministic = True
 
-
-# 设置torch的随机数种子
-setup_seed()
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp',
                   '.pgm', '.tif', '.tiff', '.webp')

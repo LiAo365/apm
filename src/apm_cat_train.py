@@ -1,27 +1,24 @@
-# Windows 10 Anconda python3.8
-# coding=utf-8
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-14 15:09:26
+LastEditTime : 2022-07-14 15:28:54
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
 
+# from torchtools.optim import RangerLars
 import os
-# import math
 import torch
-import torchvision
 import pandas as pd
 from torchvision import transforms
 from torch.utils.data import DataLoader
-from torchtools.optim import RangerLars
 from torch.optim import lr_scheduler
+from torchtools.optim import RangerLars
 from sklearn.metrics import classification_report
 from torch.utils.tensorboard import SummaryWriter
-from bpdd_src import utils
-from bpdd_src import train_utils
-from bpdd_src import apm
+from src import utils
+from src import train_utils
+from src import apm_cat
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -48,15 +45,15 @@ def main(args):
     test_result_path = os.path.join(args.result_path, 'test_result.csv')
     test_result_pd = pd.read_csv(test_result_path) if os.path.exists(
         test_result_path) else pd.DataFrame()
-    # 训练集和测试集的路径
-    trian_path = os.path.join(args.dataset, 'train')
-    test_path = os.path.join(args.dataset, 'test')
-    trainset = torchvision.datasets.ImageFolder(
-        root=trian_path, transform=data_transform, loader=utils.gray_loader)
-    testset = torchvision.datasets.ImageFolder(
-        root=test_path, transform=data_transform, loader=utils.gray_loader)
+    allsamples = utils.AllImageFolder(root=args.dataset)
     # 类别的标签, test时保存结果需要对应各个类别
-    classes = trainset.classes
+    classes = allsamples.get_classes()
+    class_to_idx = allsamples.get_class_to_idx()
+    train_samples, test_samples = allsamples.split()
+    trainset = utils.SplitDataSet(
+        classes=classes, class_to_idx=class_to_idx, samples=train_samples, transform=data_transform, loader=utils.gray_loader)
+    testset = utils.SplitDataSet(
+        classes=classes, class_to_idx=class_to_idx, samples=test_samples, transform=data_transform, loader=utils.gray_loader)
     train_loader = DataLoader(dataset=trainset, batch_size=batch_size, shuffle=True,
                               pin_memory=True, num_workers=num_workers)
     test_loader = DataLoader(dataset=testset, batch_size=batch_size, shuffle=True,
@@ -65,7 +62,7 @@ def main(args):
     # 模型创建
     def new_module():
         """依据args参数创建模型"""
-        model = apm.MultiClassification(
+        model = apm_cat.MultiClassification(
             backbone=args.backbone,
             pretrain=args.backbone_pretrain,
             num_classes=args.num_classes,
@@ -80,23 +77,19 @@ def main(args):
 
     # 定义optimizer
     # total_steps = int(trainset.__len__() / batch_size) * args.epoch
+    # optimizer = torch.optim.Adadelta(
+    #     model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     optimizer = RangerLars(model.parameters(), lr=args.lr,
-                           eps=1e-5, weight_decay=args.weight_decay)
+                           eps=1e-6, weight_decay=args.weight_decay)
     # optimizer = torch.optim.SGD(
     #     params=model.parameters(), lr=args.lr, momentum=0.95, weight_decay=args.weight_decay)
     # 学习率随着训练epoch周期变化
-    # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=20,
-    #                                            verbose=True, cooldown=5, min_lr=1e-04, eps=1e-06)
+    # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10,
+    #                                            verbose=False, cooldown=5, min_lr=1e-04, eps=1e-08, threshold=0.0001, threshold_mode='rel')
     # scheduler = lr_scheduler.CosineAnnealingWarmRestarts(
     #     optimizer=optimizer, T_0=5, T_mult=2, eta_min=1e-5)
     # scheduler = utils.flat_and_anneal(
     #     optimizer=optimizer, total_steps=total_steps, ann_start=args.ann_start)
-    # Scheduler https://arxiv.org/pdf/1812.01187.pdf
-    # def lf(x):
-    #     return ((1 + math.cos(x * math.pi / args.epoch)) / 2) * \
-    #         (1 - args.lrf) + args.lrf  # cosine
-    # scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
-    # scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=20)
     scheduler = lr_scheduler.StepLR(
         optimizer=optimizer, step_size=10, gamma=0.5)
     best_acc = 0.0

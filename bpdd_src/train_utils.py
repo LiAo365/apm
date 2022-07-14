@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-10 23:50:11
-LastEditTime : 2022-07-14 14:54:48
+LastEditTime : 2022-07-14 15:05:02
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -14,9 +14,7 @@ import torch.nn as nn
 import numpy as np
 from src import utils
 import warnings
-from utils import setup_seed
 warnings.filterwarnings('ignore')
-setup_seed(0)
 
 
 def train_one_epoch(model, optimizer, data_loader, device, epoch, loss_weights=None) -> Tuple[float, float]:

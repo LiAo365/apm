@@ -2,15 +2,15 @@
 # coding=utf-8
 '''
 Author       : LiAo
-Date         : 2022-07-12 21:55:46
-LastEditTime : 2022-07-14 15:05:39
+Date         : 2022-07-14 15:23:29
+LastEditTime : 2022-07-14 15:27:07
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
 import argparse
 import os
-from bpdd_src import apm_train
-from bpdd_src import utils
+from src import apm_cat_train
+from src import utils
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 if __name__ == '__main__':
@@ -23,17 +23,18 @@ if __name__ == '__main__':
     parser.add_argument('--pool', type=bool, default=True)
     parser.add_argument('--pool_size', type=tuple, default=(300, 300))
     parser.add_argument('--pool_type', type=str,
-                        default='avg', help='must one of (max, avg)')
+                        default='bicubic', help='must one of (nearest, linear, bilinear, bicubic, trilinear)')
     parser.add_argument('--weight_decay', type=float, default=1e-5)
     # 分类数目
-    parser.add_argument('--num_classes', type=int, default=7)
+    parser.add_argument('--num_classes', type=int, default=3)
 
     # 训练epoch
-    parser.add_argument('--epoch', type=int, default=200)
+    parser.add_argument('--epoch', type=int, default=100)
+    # 多次训练时使用
     parser.add_argument('--epoch_offset', type=int, default=0)
     # 超参数, 依据显存设置
     parser.add_argument('--batch_size', type=int,
-                        default=32, help='decide by GPU RAM')
+                        default=16, help='decide by GPU RAM')
     # 学习率参数
     parser.add_argument('--lr', type=float, default=0.005)
     # used for RangeLars
@@ -42,18 +43,18 @@ if __name__ == '__main__':
 
     # 数据集所在目录
     parser.add_argument('--dataset', type=str,
-                        default='/data/liao/datasets/cqu_bpdd/')
+                        default='/data/liao/datasets/cqu_2021_abnormal/')
     # 权重加载路径
     parser.add_argument('--load_weight_path', type=str,
                         default=None)  # /data/liao/code/apm/result/apm/weight/best_weight.pth
     # 数据保存的路径
     parser.add_argument('--weight_path', type=str,
-                        default='/data/liao/code/apm/result/bpdd_apm/weight/')
+                        default='/data/liao/code/apm/result/apm_cat/weight/')
     parser.add_argument('--log_path', type=str,
-                        default='/data/liao/code/apm/result/bpdd_apm/log/')
+                        default='/data/liao/code/apm/result/apm_cat/log/')
     parser.add_argument('--model', type=str, default='apm')
     parser.add_argument('--result_path', type=str,
-                        default='/data/liao/code/apm/result/bpdd_apm/result/')
+                        default='/data/liao/code/apm/result/apm_cat/result/')
 
     parser.add_argument('--device', default='cuda',
                         help='device id(i.e. 0 or 0, 1 or cpu)')
@@ -61,4 +62,4 @@ if __name__ == '__main__':
     opt = parser.parse_args(args=[])
 
     # 执行训练和测试
-    apm_train.main(opt)
+    apm_cat_train.main(opt)
