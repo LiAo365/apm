@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-14 14:59:31
+LastEditTime : 2022-07-14 15:03:16
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -110,8 +110,8 @@ def main(args):
             data_loader=test_loader,
             device=device)
         # 学习率的调整
-        scheduler.step(test_loss)
-        # scheduler.step()
+        # scheduler.step(test_loss)
+        scheduler.step()
 
         # 保存测试集的测试结果
         epoch_test_result_dict = classification_report(
