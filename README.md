@@ -1,10 +1,16 @@
 <!--
  * @Author       : LiAo
  * @Date         : 2022-07-06 15:17:42
- * @LastEditTime : 2022-07-11 00:51:08
+ * @LastEditTime : 2022-07-14 10:35:03
  * @LastAuthor   : LiAo
  * @Description  : Please add file description
 -->
+
+
+# Attention
+# Updating, Not The Final Version
+## Currenting: 调参 & 更换数据集的鲁棒性实验
+
 # Pavement disease detection method with adaptive perception of high-resolution image content
 
 ## 1. 训练代码说明
