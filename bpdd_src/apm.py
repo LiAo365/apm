@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 19:45:12
-LastEditTime : 2022-07-14 14:40:57
+LastEditTime : 2022-07-14 16:22:18
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -218,8 +218,8 @@ class APM(nn.Module):
 
 
 class MultiClassification(nn.Module):
-    def __init__(self, backbone='tf_efficientnetv2_b0', pretrain=True, num_classes=7, pool=False,
-                 pool_size=(300, 300), pool_type='max'):
+    def __init__(self, backbone='tf_efficientnetv2_b0', pretrain=True, num_classes=7, pool=True,
+                 pool_size=(300, 300), pool_type='bilinear'):
         super(MultiClassification, self).__init__()
 
         self.apm = APM(1, 3)

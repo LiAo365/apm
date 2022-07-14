@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-12 21:55:46
-LastEditTime : 2022-07-14 15:59:22
+LastEditTime : 2022-07-14 16:23:23
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     parser.add_argument('--pool_size', type=tuple, default=(300, 300))
     parser.add_argument('--pool_type', type=str,
                         default='bicubic', help='must one of (max, avg, nearest, linear, bilinear, bicubic, trilinear)')
-    parser.add_argument('--weight_decay', type=float, default=1e-5)
+    parser.add_argument('--weight_decay', type=float, default=0.00)
     # 分类数目
     parser.add_argument('--num_classes', type=int, default=7)
 

@@ -1,7 +1,7 @@
 <!--
  * @Author       : LiAo
  * @Date         : 2022-07-14 10:38:36
- * @LastEditTime : 2022-07-14 16:15:15
+ * @LastEditTime : 2022-07-14 16:23:43
  * @LastAuthor   : LiAo
  * @Description  : Please add file description
 -->
@@ -14,9 +14,9 @@
 |  af1c294  |   apm   | CLAHE+ToTensor() | RangerLars | CosineAnnealingWarmRestarts |     0.005     |     1e-5     |     16     |  0.7363  |
 |  86a14dd  |   apm   | CLAHE+ToTensor() |  Adadelta  |           StepLR            |     0.005     |     1e-5     |     16     |  0.7830  |
 |  b98fe70  | apm_cat | CLAHE+ToTensor() | RangerLars |           StepLR            |     0.005     |     1e-5     |     16     |          |
-|           |   apm   | CLAHE+ToTensor() | RangerLars |           StepLR            |     0.003     |     0.00     |     16     |          |
+|  82d21f0  |   apm   | CLAHE+ToTensor() | RangerLars |           StepLR            |     0.003     |     0.00     |     16     |          |
 
 ## Record For CQU-BPDD
 | commit id | method |    transforms    | optimizer  | lr_scheduler | learning_rate | weight_decay | batch_size | Accuracy |
 | :-------: | :----: | :--------------: | :--------: | :----------: | :-----------: | :----------: | :--------: | :------: |
-|           |  apm   | CLAHE+ToTensor() | RangerLars |    StepLR    |     0.003     |     1e-5     |            |          |
+|           |  apm   | CLAHE+ToTensor() | RangerLars |    StepLR    |     0.00      |     1e-5     |     32     |          |
