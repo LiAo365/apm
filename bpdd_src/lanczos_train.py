@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-10 23:49:36
-LastEditTime : 2022-07-13 23:20:44
+LastEditTime : 2022-07-14 19:51:08
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -22,19 +22,16 @@ from src import utils
 from src import train_utils
 import warnings
 warnings.filterwarnings('ignore')
-# 设置torch的随机数种子
-torch.manual_seed(123)
 
 
 def main(args):
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
     # 定义数据预处理
     data_transform = transforms.Compose([
-        utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(32, 32)),
+        utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(64, 64)),
         transforms.Resize(
-            size=(260, 260), interpolation=transforms.InterpolationMode.LANCZOS),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485], [0.229])
+            size=(300, 300), interpolation=transforms.InterpolationMode.LANCZOS),
+        transforms.ToTensor()
     ])
     # log是tensorboard的记录路径
     utils.path_exist(args.log_path)
@@ -53,9 +50,9 @@ def main(args):
     trian_path = os.path.join(args.dataset, 'train')
     test_path = os.path.join(args.dataset, 'test')
     trainset = torchvision.datasets.ImageFolder(
-        root=trian_path, transform=data_transform, loader=utils.gray_loader)
+        root=trian_path, transform=data_transform, loader=utils.rgb_loader)
     testset = torchvision.datasets.ImageFolder(
-        root=test_path, transform=data_transform, loader=utils.gray_loader)
+        root=test_path, transform=data_transform, loader=utils.rgb_loader)
     # 类别的标签, test时保存结果需要对应各个类别
     classes = trainset.classes
     train_loader = DataLoader(dataset=trainset, batch_size=batch_size, shuffle=True,
@@ -65,13 +62,13 @@ def main(args):
 
     # 如果指定weight_path则依据weight_path加载权重进行训练
     model = timm.create_model(
-        args.backbone, pretrained=args.backbone_pretrain, num_classes=args.num_classes, in_chans=1)
+        args.backbone, pretrained=args.backbone_pretrain, num_classes=args.num_classes, in_chans=3)
     model = model.to(device)
 
     # 定义optimizer
     # total_steps = int(trainset.__len__() / batch_size) * args.epoch
     optimizer = RangerLars(model.parameters(), lr=args.lr,
-                           eps=1e-5, weight_decay=args.weight_decay)
+                           eps=1e-6, weight_decay=args.weight_decay)
     # 学习率随着训练epoch周期变化
     # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=20,
     #                                            verbose=True, cooldown=5, min_lr=1e-04, eps=1e-06)
@@ -79,7 +76,9 @@ def main(args):
     #     optimizer=optimizer, T_0=5, T_mult=2, eta_min=1e-5)
     # scheduler = utils.flat_and_anneal(
     #     optimizer=optimizer, total_steps=total_steps, ann_start=args.ann_start)
-    scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=20)
+    # scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=20)
+    scheduler = lr_scheduler.StepLR(
+        optimizer=optimizer, step_size=20, gamma=0.5)
     best_acc = 0.0
     for epoch in range(args.epoch):
         # train

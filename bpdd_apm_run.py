@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-12 21:55:46
-LastEditTime : 2022-07-14 16:49:40
+LastEditTime : 2022-07-14 20:23:47
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -15,7 +15,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 if __name__ == '__main__':
     # 设置随机数的种子,保证结果的可复现
-    utils.setup_seed(100)
+    utils.setup_seed(123)
     parser = argparse.ArgumentParser()
     # 网络模型参数
     parser.add_argument('--backbone', type=str, default='tf_efficientnetv2_b2')
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     parser.add_argument('--pool_size', type=tuple, default=(300, 300))
     parser.add_argument('--pool_type', type=str,
                         default='bicubic', help='must one of (max, avg, nearest, linear, bilinear, bicubic, trilinear)')
-    parser.add_argument('--weight_decay', type=float, default=0.00)
+    parser.add_argument('--weight_decay', type=float, default=1e-5)
     # 分类数目
     parser.add_argument('--num_classes', type=int, default=7)
 
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int,
                         default=32, help='decide by GPU RAM')
     # 学习率参数
-    parser.add_argument('--lr', type=float, default=0.003)
+    parser.add_argument('--lr', type=float, default=0.001)
     # used for RangeLars
     parser.add_argument('--lrf', type=float, default=0.005)
     parser.add_argument('--ann_start', type=float, default=0.5)

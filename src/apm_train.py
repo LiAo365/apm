@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-14 19:31:44
+LastEditTime : 2022-07-14 21:58:02
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -13,7 +13,7 @@ import torch
 import pandas as pd
 from torchvision import transforms
 from torch.utils.data import DataLoader
-from torchtools.optim import RangerLars
+# from torchtools.optim import RangerLars
 from torch.optim import lr_scheduler
 from sklearn.metrics import classification_report
 from torch.utils.tensorboard import SummaryWriter
@@ -78,10 +78,10 @@ def main(args):
 
     # 定义optimizer
     # total_steps = int(trainset.__len__() / batch_size) * args.epoch
-    # optimizer = torch.optim.Adadelta(
-    #     model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    optimizer = RangerLars(model.parameters(), lr=args.lr,
-                           weight_decay=args.weight_decay)
+    optimizer = torch.optim.Adam(
+        model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    # optimizer = RangerLars(model.parameters(), lr=args.lr,
+    #                        weight_decay=args.weight_decay)
     # optimizer = torch.optim.SGD(
     #     params=model.parameters(), lr=args.lr, momentum=0.95, weight_decay=args.weight_decay)
     # 学习率随着训练epoch周期变化

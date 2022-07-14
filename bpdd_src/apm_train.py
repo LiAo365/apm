@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-14 15:50:09
+LastEditTime : 2022-07-14 19:37:53
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -98,7 +98,7 @@ def main(args):
     # scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
     # scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=20)
     scheduler = lr_scheduler.StepLR(
-        optimizer=optimizer, step_size=10, gamma=0.5)
+        optimizer=optimizer, step_size=20, gamma=0.5)
     best_acc = 0.0
     epoch_offset = args.epoch_offset
     for epoch in range(epoch_offset, epoch_offset + args.epoch):
