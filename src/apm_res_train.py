@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-10 23:33:10
-LastEditTime : 2022-07-11 12:09:38
+LastEditTime : 2022-07-14 14:59:22
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -21,8 +21,6 @@ from src import train_utils
 from src import apm_res
 import warnings
 warnings.filterwarnings('ignore')
-# 设置torch的随机数种子
-torch.manual_seed(123)
 
 
 def main(args):

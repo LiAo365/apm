@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 19:45:12
-LastEditTime : 2022-07-12 23:35:48
+LastEditTime : 2022-07-14 14:40:57
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -189,9 +189,9 @@ class APM(nn.Module):
 
     def __init__(self, in_chs: int, out_chs: int):
         super(APM, self).__init__()
-        self.conv_blocks_1 = ConvBlock(in_chs, 4, kernel_size=13, stride=3, padding=1, dilation=1,
+        self.conv_blocks_1 = ConvBlock(in_chs, 4, kernel_size=13, stride=2, padding=1, dilation=1,
                                        norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.MaxPool2d(3, stride=1))
-        self.conv_blocks_2 = ConvBlock(4, 16, kernel_size=3, stride=1, padding=1, dilation=1,
+        self.conv_blocks_2 = ConvBlock(4, 16, kernel_size=3, stride=2, padding=1, dilation=1,
                                        norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.MaxPool2d(3, stride=1))
         self.conv_blocks_3 = ConvBlock(16, 32, kernel_size=3, stride=1, padding=1, dilation=1,
                                        norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.MaxPool2d(3, stride=1))

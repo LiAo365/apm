@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-14 14:24:30
+LastEditTime : 2022-07-14 14:59:31
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -13,7 +13,7 @@ import torch
 import pandas as pd
 from torchvision import transforms
 from torch.utils.data import DataLoader
-from torchtools.optim import RangerLars
+# from torchtools.optim import RangerLars
 from torch.optim import lr_scheduler
 from sklearn.metrics import classification_report
 from torch.utils.tensorboard import SummaryWriter
@@ -22,14 +22,13 @@ from src import train_utils
 from src import apm
 import warnings
 warnings.filterwarnings('ignore')
-# 设置torch的随机数种子
-torch.manual_seed(0)
 
 
 def main(args):
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
     # 定义数据预处理
     data_transform = transforms.Compose([
+        utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(64, 64)),
         transforms.ToTensor()
     ])
     # log是tensorboard的记录路径
@@ -40,7 +39,7 @@ def main(args):
     # 最优权重保存路径
     utils.path_exist(args.weight_path)
     # 数据加载的线程数
-    num_workers = 4
+    num_workers = 8
     # 超参数
     batch_size = args.batch_size
     # 保存测试集上的结果
@@ -81,8 +80,8 @@ def main(args):
     # total_steps = int(trainset.__len__() / batch_size) * args.epoch
     optimizer = torch.optim.Adadelta(
         model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    optimizer = RangerLars(model.parameters(), lr=args.lr,
-                           eps=1e-5, weight_decay=args.weight_decay)
+    # optimizer = RangerLars(model.parameters(), lr=args.lr,
+    #                        eps=1e-5, weight_decay=args.weight_decay)
     # optimizer = torch.optim.SGD(
     #     params=model.parameters(), lr=args.lr, momentum=0.95, weight_decay=args.weight_decay)
     # 学习率随着训练epoch周期变化
@@ -93,7 +92,7 @@ def main(args):
     # scheduler = utils.flat_and_anneal(
     #     optimizer=optimizer, total_steps=total_steps, ann_start=args.ann_start)
     scheduler = lr_scheduler.StepLR(
-        optimizer=optimizer, step_size=20, gamma=0.1)
+        optimizer=optimizer, step_size=20, gamma=0.5)
     best_acc = 0.0
     epoch_offset = args.epoch_offset
     for epoch in range(epoch_offset, epoch_offset + args.epoch):

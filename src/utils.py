@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 19:52:11
-LastEditTime : 2022-07-12 23:21:00
+LastEditTime : 2022-07-14 14:55:39
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -18,6 +18,15 @@ from PIL import Image
 from torch.utils.data import dataset
 from typing import Callable, Optional, Any, Tuple, List, Dict
 from torch.nn.modules.utils import _pair, _quadruple
+
+
+def setup_seed(seed: int = 0):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    np.random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp',
                   '.pgm', '.tif', '.tiff', '.webp')
@@ -197,7 +206,7 @@ class AllImageFolder():
     def get_class_to_idx(self):
         return self.class_to_idx
 
-    def split(self, ratio: float = 0.9, seed: int = 100):
+    def split(self, ratio: float = 0.9, seed: int = 0):
         np.random.seed(seed)
         train_set = []
         test_set = []

@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-13 23:14:35
+LastEditTime : 2022-07-14 14:52:28
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -25,16 +25,15 @@ from bpdd_src import apm
 import warnings
 warnings.filterwarnings('ignore')
 # 设置torch的随机数种子
-torch.manual_seed(123)
+torch.manual_seed(0)
 
 
 def main(args):
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
     # 定义数据预处理
     data_transform = transforms.Compose([
-        utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(32, 32)),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485], [0.229])
+        utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(64, 64)),
+        transforms.ToTensor()
     ])
     # log是tensorboard的记录路径
     utils.path_exist(args.log_path)
@@ -99,7 +98,9 @@ def main(args):
     #     return ((1 + math.cos(x * math.pi / args.epoch)) / 2) * \
     #         (1 - args.lrf) + args.lrf  # cosine
     # scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
-    scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=20)
+    # scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=20)
+    scheduler = lr_scheduler.StepLR(
+        optimizer=optimizer, step_size=20, gamma=0.5)
     best_acc = 0.0
     epoch_offset = args.epoch_offset
     for epoch in range(epoch_offset, epoch_offset + args.epoch):
