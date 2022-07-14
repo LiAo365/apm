@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 19:52:11
-LastEditTime : 2022-07-14 15:04:57
+LastEditTime : 2022-07-14 19:27:42
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -206,8 +206,7 @@ class AllImageFolder():
     def get_class_to_idx(self):
         return self.class_to_idx
 
-    def split(self, ratio: float = 0.9, seed: int = 0):
-        np.random.seed(seed)
+    def split(self, ratio: float = 0.8):
         train_set = []
         test_set = []
         directory = os.path.expanduser(self.root)

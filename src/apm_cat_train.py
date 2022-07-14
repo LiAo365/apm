@@ -1,7 +1,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-14 15:28:54
+LastEditTime : 2022-07-14 19:31:52
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -49,7 +49,7 @@ def main(args):
     # 类别的标签, test时保存结果需要对应各个类别
     classes = allsamples.get_classes()
     class_to_idx = allsamples.get_class_to_idx()
-    train_samples, test_samples = allsamples.split()
+    train_samples, test_samples = allsamples.split(ratio=0.8)
     trainset = utils.SplitDataSet(
         classes=classes, class_to_idx=class_to_idx, samples=train_samples, transform=data_transform, loader=utils.gray_loader)
     testset = utils.SplitDataSet(
@@ -91,7 +91,7 @@ def main(args):
     # scheduler = utils.flat_and_anneal(
     #     optimizer=optimizer, total_steps=total_steps, ann_start=args.ann_start)
     scheduler = lr_scheduler.StepLR(
-        optimizer=optimizer, step_size=10, gamma=0.5)
+        optimizer=optimizer, step_size=20, gamma=0.5)
     best_acc = 0.0
     epoch_offset = args.epoch_offset
     for epoch in range(epoch_offset, epoch_offset + args.epoch):

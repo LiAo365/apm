@@ -1,7 +1,7 @@
 <!--
  * @Author       : LiAo
  * @Date         : 2022-07-14 10:38:36
- * @LastEditTime : 2022-07-14 16:23:43
+ * @LastEditTime : 2022-07-14 19:15:47
  * @LastAuthor   : LiAo
  * @Description  : Please add file description
 -->
@@ -13,8 +13,10 @@
 |  8d6fb4e  |   apm   | CLAHE+ToTensor() | RangerLars |      ReduceLROnPlateau      |     0.005     |     0.00     |     16     |  0.8256  |
 |  af1c294  |   apm   | CLAHE+ToTensor() | RangerLars | CosineAnnealingWarmRestarts |     0.005     |     1e-5     |     16     |  0.7363  |
 |  86a14dd  |   apm   | CLAHE+ToTensor() |  Adadelta  |           StepLR            |     0.005     |     1e-5     |     16     |  0.7830  |
-|  b98fe70  | apm_cat | CLAHE+ToTensor() | RangerLars |           StepLR            |     0.005     |     1e-5     |     16     |          |
-|  82d21f0  |   apm   | CLAHE+ToTensor() | RangerLars |           StepLR            |     0.003     |     0.00     |     16     |          |
+|  b98fe70  | apm_cat | CLAHE+ToTensor() | RangerLars |           StepLR            |     0.005     |     0.00     |     16     |  0.8103  |
+|  82d21f0  |   apm   | CLAHE+ToTensor() | RangerLars |           StepLR            |     0.003     |     0.00     |     16     |  0.8316  |
+|           | apm_cat | CLAHE+ToTensor() | RangerLars |           StepLR            |     0.005     |     1e-5     |     16     |  0.8103  |
+|           |   apm   | CLAHE+ToTensor() | RangerLars |           StepLR            |     0.003     |     1e-5     |     16     |  0.8316  |
 
 ## Record For CQU-BPDD
 | commit id | method |    transforms    | optimizer  | lr_scheduler | learning_rate | weight_decay | batch_size | Accuracy |

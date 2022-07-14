@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 19:45:12
-LastEditTime : 2022-07-14 15:20:52
+LastEditTime : 2022-07-14 19:17:52
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -201,9 +201,9 @@ class APM(nn.Module):
                                      downsample=False)
         self.cbam_blocks = CBAM(32)
         self.conv_blocks_4 = ConvBlock(32, 8, kernel_size=3, stride=1, padding=1, dilation=1,
-                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.MaxPool2d(3, stride=1))
+                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=None)
         self.conv_blocks_5 = ConvBlock(8, out_chs, kernel_size=3, stride=1, padding=1, dilation=1,
-                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.MaxPool2d(3, stride=1))
+                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=None)
 
     def forward(self, x):
         x = self.conv_blocks_1(x)

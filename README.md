@@ -1,7 +1,7 @@
 <!--
  * @Author       : LiAo
  * @Date         : 2022-07-06 15:17:42
- * @LastEditTime : 2022-07-14 17:23:51
+ * @LastEditTime : 2022-07-14 17:45:52
  * @LastAuthor   : LiAo
  * @Description  : Please add file description
 -->
@@ -12,6 +12,8 @@
 ## Currenting: 调参 & 更换数据集的鲁棒性实验
 
 # Pavement disease detection method with adaptive perception of high-resolution image content
+
+[![OSCS Status](https://www.oscs1024.com/platform/badge/liyuanshuo/apm.svg?size=small)](https://www.oscs1024.com/project/liyuanshuo/apm?ref=badge_small)  ![Documentation](https://img.shields.io/badge/documentation-yes-brightgreen)  
 
 ## 1. 训练代码说明
 
