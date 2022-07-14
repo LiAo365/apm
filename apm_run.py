@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 23:42:53
-LastEditTime : 2022-07-14 15:01:50
+LastEditTime : 2022-07-14 16:13:01
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     parser.add_argument('--pool_size', type=tuple, default=(320, 320))
     parser.add_argument('--pool_type', type=str,
                         default='avg', help='must one of (max, avg)')
-    parser.add_argument('--weight_decay', type=float, default=1e-5)
+    parser.add_argument('--weight_decay', type=float, default=0.00)
     # 分类数目
     parser.add_argument('--num_classes', type=int, default=3)
 
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int,
                         default=16, help='decide by GPU RAM')
     # 学习率参数
-    parser.add_argument('--lr', type=float, default=0.005)
+    parser.add_argument('--lr', type=float, default=0.003)
     # used for RangeLars
     parser.add_argument('--lrf', type=float, default=0.005)
     parser.add_argument('--ann_start', type=float, default=0.5)

@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-14 15:23:29
-LastEditTime : 2022-07-14 15:27:07
+LastEditTime : 2022-07-14 15:59:47
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int,
                         default=16, help='decide by GPU RAM')
     # 学习率参数
-    parser.add_argument('--lr', type=float, default=0.005)
+    parser.add_argument('--lr', type=float, default=0.003)
     # used for RangeLars
     parser.add_argument('--lrf', type=float, default=0.005)
     parser.add_argument('--ann_start', type=float, default=0.5)
