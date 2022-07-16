@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-14 19:37:53
+LastEditTime : 2022-07-16 23:37:58
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -19,8 +19,8 @@ from torchtools.optim import RangerLars
 from torch.optim import lr_scheduler
 from sklearn.metrics import classification_report
 from torch.utils.tensorboard import SummaryWriter
-from bpdd_src import utils
-from bpdd_src import train_utils
+from util import utils
+from util import train_utils
 from bpdd_src import apm
 import warnings
 warnings.filterwarnings('ignore')
@@ -30,8 +30,12 @@ def main(args):
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
     # 定义数据预处理
     data_transform = transforms.Compose([
-        utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(64, 64)),
+        utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(32, 32)),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomVerticalFlip(),
+        transforms.RandomPerspective(),
         transforms.ToTensor()
+        # transforms.Normalize([0.414289], [0.215069])
     ])
     # log是tensorboard的记录路径
     utils.path_exist(args.log_path)
@@ -80,8 +84,10 @@ def main(args):
 
     # 定义optimizer
     # total_steps = int(trainset.__len__() / batch_size) * args.epoch
+    # optimizer = torch.optim.Adam(
+    #     model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     optimizer = RangerLars(model.parameters(), lr=args.lr,
-                           eps=1e-6, weight_decay=args.weight_decay)
+                           weight_decay=args.weight_decay)
     # optimizer = torch.optim.SGD(
     #     params=model.parameters(), lr=args.lr, momentum=0.95, weight_decay=args.weight_decay)
     # 学习率随着训练epoch周期变化
@@ -96,11 +102,21 @@ def main(args):
     #     return ((1 + math.cos(x * math.pi / args.epoch)) / 2) * \
     #         (1 - args.lrf) + args.lrf  # cosine
     # scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
-    # scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=20)
-    scheduler = lr_scheduler.StepLR(
-        optimizer=optimizer, step_size=20, gamma=0.5)
+    scheduler = lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=args.epoch)
+    # scheduler = lr_scheduler.StepLR(
+    #     optimizer=optimizer, step_size=20, gamma=0.5)
+    # def lf(x):
+    #     return ((1 + math.cos(x * math.pi / args.epoch)) / 2) * \
+    #         (1 - args.lrf) + args.lrf  # cosine
+    # scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
     best_acc = 0.0
     epoch_offset = args.epoch_offset
+    # 设置loss function
+    # loss_function = nn.CrossEntropyLoss() if loss_weights is None else nn.CrossEntropyLoss(
+    #     weight=torch.tensor(loss_weights))
+    # loss_function = utils.FocalLoss(gamma=8, reduction='sum')
+    loss_function = torch.nn.CrossEntropyLoss()
     for epoch in range(epoch_offset, epoch_offset + args.epoch):
         # train
         train_loss, train_acc = train_utils.train_one_epoch(
@@ -108,16 +124,19 @@ def main(args):
             optimizer=optimizer,
             data_loader=train_loader,
             device=device,
-            epoch=epoch
+            epoch=epoch,
+            loss_function=loss_function
         )
         # test
         test_loss, test_acc, epoch_test_result = train_utils.test_model(
             model=model,
             data_loader=test_loader,
-            device=device)
+            device=device,
+            loss_function=loss_function)
         # 学习率的调整
         # scheduler.step(test_loss)
-        scheduler.step()
+        if (epoch * 1.0 - epoch_offset) / args.epoch > 0.5:
+            scheduler.step()
 
         # 保存测试集的测试结果
         epoch_test_result_dict = classification_report(

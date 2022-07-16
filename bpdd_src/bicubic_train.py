@@ -3,12 +3,11 @@
 '''
 Author       : LiAo
 Date         : 2022-07-06 14:27:33
-LastEditTime : 2022-07-14 19:49:02
+LastEditTime : 2022-07-16 00:10:20
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
 import os
-import timm
 import torch
 import pandas as pd
 import torchvision
@@ -18,8 +17,9 @@ from torchtools.optim import RangerLars
 from torch.optim import lr_scheduler
 from sklearn.metrics import classification_report
 from torch.utils.tensorboard import SummaryWriter
-from bpdd_src import utils
-from bpdd_src import train_utils
+from util import utils
+from util import train_utils
+from bpdd_src import apm
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -61,14 +61,16 @@ def main(args):
                              pin_memory=True, num_workers=num_workers)
 
     # 如果指定weight_path则依据weight_path加载权重进行训练
-    model = timm.create_model(
-        args.backbone, pretrained=args.backbone_pretrain, num_classes=args.num_classes, in_chans=1)
+    model = apm.MultiClassification(
+        backbone=args.backbone, pretrain=args.backbone_pretrain, num_classes=args.num_classes, pool=False, apm=False)
+    # timm.create_model(
+    #     args.backbone, pretrained=args.backbone_pretrain, num_classes=args.num_classes, in_chans=3)
     model = model.to(device)
 
     # 定义optimizer
     # total_steps = int(trainset.__len__() / batch_size) * args.epoch
     optimizer = RangerLars(model.parameters(), lr=args.lr,
-                           eps=1e-6, weight_decay=args.weight_decay)
+                           weight_decay=args.weight_decay)
     # 学习率随着训练epoch周期变化
     # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=20,
     #                                            verbose=True, cooldown=5, min_lr=1e-04, eps=1e-06)
@@ -77,26 +79,33 @@ def main(args):
     # scheduler = utils.flat_and_anneal(
     #     optimizer=optimizer, total_steps=total_steps, ann_start=args.ann_start)
     # scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=20)
-    scheduler = lr_scheduler.StepLR(
-        optimizer=optimizer, step_size=20, gamma=0.5)
+    # scheduler = lr_scheduler.StepLR(
+    #     optimizer=optimizer, step_size=20, gamma=0.5)
+    scheduler = lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=int(1.5 * args.epoch))
     best_acc = 0.0
-    for epoch in range(args.epoch):
+    loss_function = utils.FocalLoss()
+    epoch_offset = args.epoch_offset
+    for epoch in range(epoch_offset, epoch_offset + args.epoch):
         # train
         train_loss, train_acc = train_utils.train_one_epoch(
             model=model,
             optimizer=optimizer,
             data_loader=train_loader,
             device=device,
-            epoch=epoch
+            epoch=epoch,
+            loss_function=loss_function
         )
         # test
         test_loss, test_acc, epoch_test_result = train_utils.test_model(
             model=model,
             data_loader=test_loader,
-            device=device)
+            device=device,
+            loss_function=loss_function)
         # 学习率的调整
         # scheduler.step(test_loss)
-        scheduler.step()
+        if (epoch * 1.0 - epoch_offset) / args.epoch > 0.25:
+            scheduler.step()
 
         # 保存测试集的测试结果
         epoch_test_result_dict = classification_report(

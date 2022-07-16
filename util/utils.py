@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 19:52:11
-LastEditTime : 2022-07-14 19:27:42
+LastEditTime : 2022-07-16 12:02:02
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -16,8 +16,9 @@ import numpy as np
 from tqdm import tqdm
 from PIL import Image
 from torch.utils.data import dataset
-from typing import Callable, Optional, Any, Tuple, List, Dict
+from typing import Callable, Optional, Any, Tuple, List, Dict, Sequence
 from torch.nn.modules.utils import _pair, _quadruple
+from torch.nn import functional as F
 
 
 def setup_seed(seed: int = 0):
@@ -206,7 +207,7 @@ class AllImageFolder():
     def get_class_to_idx(self):
         return self.class_to_idx
 
-    def split(self, ratio: float = 0.8):
+    def split(self, ratio: float = 0.9):
         train_set = []
         test_set = []
         directory = os.path.expanduser(self.root)
@@ -359,6 +360,131 @@ def flat_and_anneal(optimizer, total_steps: int, ann_start: float = 0.5):
     scheduler = ConcatLR(optimizer, dummy, cosine,
                          total_steps, ann_start)
     return scheduler
+
+
+class FocalLoss(nn.Module):
+    """ Focal Loss, as described in https://arxiv.org/abs/1708.02002.
+    It is essentially an enhancement to cross entropy loss and is
+    useful for classification tasks when there is a large class imbalance.
+    x is expected to contain raw, unnormalized scores for each class.
+    y is expected to contain class labels.
+    Shape:
+        - x: (batch_size, C) or (batch_size, C, d1, d2, ..., dK), K > 0.
+        - y: (batch_size,) or (batch_size, d1, d2, ..., dK), K > 0.
+    """
+
+    def __init__(self,
+                 alpha: Optional[torch.Tensor] = None,
+                 gamma: float = 2.,
+                 reduction: str = 'sum',
+                 ignore_index: int = -100,
+                 add_cross_entry=False,
+                 cross_entry_weight=None):
+        """Constructor.
+        Args:
+            alpha (Tensor, optional): Weights for each class. Defaults to None.
+            gamma (float, optional): A constant, as described in the paper.
+                Defaults to 0.
+            reduction (str, optional): 'mean', 'sum' or 'none'.
+                Defaults to 'mean'.
+            ignore_index (int, optional): class label to ignore.
+                Defaults to -100.
+        """
+        if reduction not in ('mean', 'sum', 'none'):
+            raise ValueError(
+                'Reduction must be one of: "mean", "sum", "none".')
+
+        super().__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.ignore_index = ignore_index
+        self.reduction = reduction
+        self.cross_entry = None
+        if add_cross_entry:
+            self.cross_entry = nn.CrossEntropyLoss() if cross_entry_weight is None else nn.CrossEntropyLoss(
+                weight=torch.tensor(cross_entry_weight))
+
+        self.nll_loss = nn.NLLLoss(
+            weight=alpha, reduction='none', ignore_index=ignore_index)
+
+    def __repr__(self):
+        arg_keys = ['alpha', 'gamma', 'ignore_index', 'reduction']
+        arg_vals = [self.__dict__[k] for k in arg_keys]
+        arg_strs = [f'{k}={v}' for k, v in zip(arg_keys, arg_vals)]
+        arg_str = ', '.join(arg_strs)
+        return f'{type(self).__name__}({arg_str})'
+
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        if x.ndim > 2:
+            # (N, C, d1, d2, ..., dK) --> (N * d1 * ... * dK, C)
+            c = x.shape[1]
+            x = x.permute(0, *range(2, x.ndim), 1).reshape(-1, c)
+            # (N, d1, d2, ..., dK) --> (N * d1 * ... * dK,)
+            y = y.view(-1)
+
+        unignored_mask = y != self.ignore_index
+        y = y[unignored_mask]
+        if len(y) == 0:
+            return torch.tensor(0.)
+        x = x[unignored_mask]
+
+        # compute weighted cross entropy term: -alpha * log(pt)
+        # (alpha is already part of self.nll_loss)
+        log_p = F.log_softmax(x, dim=-1)
+        ce = self.nll_loss(log_p, y)
+
+        # get true class column from each row
+        all_rows = torch.arange(len(x))
+        log_pt = log_p[all_rows, y]
+
+        # compute focal term: (1 - pt)^gamma
+        pt = log_pt.exp()
+        focal_term = (1 - pt)**self.gamma
+
+        # the full loss: -alpha * ((1 - pt)^gamma) * log(pt)
+        loss = focal_term * ce
+
+        if self.reduction == 'mean':
+            loss = loss.mean()
+        elif self.reduction == 'sum':
+            loss = loss.sum()
+
+        return loss
+
+
+def focal_loss(alpha: Optional[Sequence] = None,
+               gamma: float = 2.,
+               reduction: str = 'mean',
+               ignore_index: int = -100,
+               device='cuda',
+               dtype=torch.float32) -> FocalLoss:
+    """Factory function for FocalLoss.
+    Args:
+        alpha (Sequence, optional): Weights for each class. Will be converted
+            to a Tensor if not None. Defaults to None.
+        gamma (float, optional): A constant, as described in the paper.
+            Defaults to 0.
+        reduction (str, optional): 'mean', 'sum' or 'none'.
+            Defaults to 'mean'.
+        ignore_index (int, optional): class label to ignore.
+            Defaults to -100.
+        device (str, optional): Device to move alpha to. Defaults to 'cpu'.
+        dtype (torch.dtype, optional): dtype to cast alpha to.
+            Defaults to torch.float32.
+    Returns:
+        A FocalLoss object
+    """
+    if alpha is not None:
+        if not isinstance(alpha, torch.Tensor):
+            alpha = torch.tensor(alpha)
+        alpha = alpha.to(device=device, dtype=dtype)
+
+    fl = FocalLoss(
+        alpha=alpha,
+        gamma=gamma,
+        reduction=reduction,
+        ignore_index=ignore_index)
+    return fl
 
 
 def test_shuffle_list():

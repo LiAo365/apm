@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-10 23:50:11
-LastEditTime : 2022-07-14 21:55:49
+LastEditTime : 2022-07-14 22:45:02
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -36,7 +36,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, loss_weights=N
     # 设置loss function
     # loss_function = nn.CrossEntropyLoss() if loss_weights is None else nn.CrossEntropyLoss(
     #     weight=torch.tensor(loss_weights))
-    loss_function = utils.FocalLoss()
+    loss_function = utils.FocalLoss(gamma=4)
     # 累计损失
     accu_loss = torch.zeros(1).to(device)
     # 累计预测正确的样本数目
@@ -86,7 +86,7 @@ def test_model(model, data_loader, device, loss_weights=None) -> Tuple[float, fl
     torch.cuda.empty_cache()
     # loss_function = nn.CrossEntropyLoss() if loss_weights is None else nn.CrossEntropyLoss(
     #     weight=torch.tensor(loss_weights))
-    loss_function = utils.FocalLoss()
+    loss_function = utils.FocalLoss(gamma=4)
     model.eval()
     # 累计损失
     accu_loss = torch.zeros(1).to(device)

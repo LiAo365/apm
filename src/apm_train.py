@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-14 21:58:02
+LastEditTime : 2022-07-14 23:26:57
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -17,8 +17,8 @@ from torch.utils.data import DataLoader
 from torch.optim import lr_scheduler
 from sklearn.metrics import classification_report
 from torch.utils.tensorboard import SummaryWriter
-from src import utils
-from src import train_utils
+from util import utils
+from util import train_utils
 from src import apm
 import warnings
 warnings.filterwarnings('ignore')
@@ -93,6 +93,10 @@ def main(args):
     #     optimizer=optimizer, total_steps=total_steps, ann_start=args.ann_start)
     scheduler = lr_scheduler.StepLR(
         optimizer=optimizer, step_size=20, gamma=0.5)
+    # 设置loss function
+    # loss_function = nn.CrossEntropyLoss() if loss_weights is None else nn.CrossEntropyLoss(
+    #     weight=torch.tensor(loss_weights))
+    loss_function = utils.FocalLoss(gamma=4)
     best_acc = 0.0
     epoch_offset = args.epoch_offset
     for epoch in range(epoch_offset, epoch_offset + args.epoch):
@@ -102,13 +106,15 @@ def main(args):
             optimizer=optimizer,
             data_loader=train_loader,
             device=device,
-            epoch=epoch
+            epoch=epoch,
+            loss_function=loss_function
         )
         # test
         test_loss, test_acc, epoch_test_result = train_utils.test_model(
             model=model,
             data_loader=test_loader,
-            device=device)
+            device=device,
+            loss_function=loss_function)
         # 学习率的调整
         # scheduler.step(test_loss)
         scheduler.step()

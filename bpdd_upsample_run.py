@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-06 14:50:02
-LastEditTime : 2022-07-13 23:24:53
+LastEditTime : 2022-07-16 00:19:21
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -11,29 +11,31 @@ Description  : Please add file description
 import argparse
 import os
 from bpdd_src import bicubic_train, bilinear_train, lanczos_train
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+from util import utils
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 
 
 def bicubic_train_main():
     parser = argparse.ArgumentParser()
     # 网络模型参数
-    parser.add_argument('--backbone', type=str, default='tf_efficientnetv2_b2')
+    parser.add_argument('--backbone', type=str, default='tf_efficientnetv2_b3')
     parser.add_argument('--backbone_pretrain', type=bool, default=True)
-    parser.add_argument('--pool', type=bool, default=False)
-    parser.add_argument('--pool_size', type=tuple, default=(320, 320))
+    parser.add_argument('--pool', type=bool, default=True)
+    parser.add_argument('--pool_size', type=tuple, default=(300, 300))
     parser.add_argument('--pool_type', type=str,
-                        default='avg', help='must one of (max, avg)')
-    parser.add_argument('--weight_decay', type=float, default=1e-5)
+                        default='max', help='must one of (max, avg)')
+    parser.add_argument('--weight_decay', type=float, default=0.00)
     # 分类数目
     parser.add_argument('--num_classes', type=int, default=7)
 
     # 训练epoch
     parser.add_argument('--epoch', type=int, default=100)
+    parser.add_argument('--epoch_offset', type=int, default=0)
     # 超参数, 依据显存设置
     parser.add_argument('--batch_size', type=int,
-                        default=16, help='decide by GPU RAM')
+                        default=64, help='decide by GPU RAM')
     # 学习率参数
-    parser.add_argument('--lr', type=float, default=0.003)
+    parser.add_argument('--lr', type=float, default=8e-4)
     parser.add_argument('--lrf', type=float, default=0.005)
     parser.add_argument('--ann_start', type=float, default=0.5)
 
@@ -63,23 +65,24 @@ def bicubic_train_main():
 def bilinear_train_main():
     parser = argparse.ArgumentParser()
     # 网络模型参数
-    parser.add_argument('--backbone', type=str, default='tf_efficientnetv2_b2')
+    parser.add_argument('--backbone', type=str, default='tf_efficientnetv2_b3')
     parser.add_argument('--backbone_pretrain', type=bool, default=True)
-    parser.add_argument('--pool', type=bool, default=False)
-    parser.add_argument('--pool_size', type=tuple, default=(320, 320))
+    parser.add_argument('--pool', type=bool, default=True)
+    parser.add_argument('--pool_size', type=tuple, default=(300, 300))
     parser.add_argument('--pool_type', type=str,
-                        default='avg', help='must one of (max, avg)')
-    parser.add_argument('--weight_decay', type=float, default=1e-5)
+                        default='max', help='must one of (max, avg)')
+    parser.add_argument('--weight_decay', type=float, default=0.00)
     # 分类数目
     parser.add_argument('--num_classes', type=int, default=7)
 
     # 训练epoch
     parser.add_argument('--epoch', type=int, default=100)
+    parser.add_argument('--epoch_offset', type=int, default=0)
     # 超参数, 依据显存设置
     parser.add_argument('--batch_size', type=int,
-                        default=16, help='decide by GPU RAM')
+                        default=64, help='decide by GPU RAM')
     # 学习率参数
-    parser.add_argument('--lr', type=float, default=0.003)
+    parser.add_argument('--lr', type=float, default=8e-4)
     parser.add_argument('--lrf', type=float, default=0.005)
     parser.add_argument('--ann_start', type=float, default=0.5)
 
@@ -109,23 +112,24 @@ def bilinear_train_main():
 def lanczos_train_main():
     parser = argparse.ArgumentParser()
     # 网络模型参数
-    parser.add_argument('--backbone', type=str, default='tf_efficientnetv2_b2')
+    parser.add_argument('--backbone', type=str, default='tf_efficientnetv2_b3')
     parser.add_argument('--backbone_pretrain', type=bool, default=True)
-    parser.add_argument('--pool', type=bool, default=False)
-    parser.add_argument('--pool_size', type=tuple, default=(320, 320))
+    parser.add_argument('--pool', type=bool, default=True)
+    parser.add_argument('--pool_size', type=tuple, default=(300, 300))
     parser.add_argument('--pool_type', type=str,
-                        default='avg', help='must one of (max, avg)')
-    parser.add_argument('--weight_decay', type=float, default=1e-5)
+                        default='max', help='must one of (max, avg)')
+    parser.add_argument('--weight_decay', type=float, default=0.00)
     # 分类数目
     parser.add_argument('--num_classes', type=int, default=7)
 
     # 训练epoch
     parser.add_argument('--epoch', type=int, default=100)
+    parser.add_argument('--epoch_offset', type=int, default=0)
     # 超参数, 依据显存设置
     parser.add_argument('--batch_size', type=int,
-                        default=16, help='decide by GPU RAM')
+                        default=64, help='decide by GPU RAM')
     # 学习率参数
-    parser.add_argument('--lr', type=float, default=0.003)
+    parser.add_argument('--lr', type=float, default=8e-4)
     parser.add_argument('--lrf', type=float, default=0.005)
     parser.add_argument('--ann_start', type=float, default=0.5)
 
@@ -153,6 +157,7 @@ def lanczos_train_main():
 
 
 if __name__ == '__main__':
+    utils.setup_seed(100)
     bicubic_train_main()
     bilinear_train_main()
     lanczos_train_main()
