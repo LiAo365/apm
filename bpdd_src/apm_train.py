@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-16 23:37:58
+LastEditTime : 2022-07-17 15:23:13
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -29,14 +29,25 @@ warnings.filterwarnings('ignore')
 def main(args):
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
     # 定义数据预处理
-    data_transform = transforms.Compose([
-        utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(32, 32)),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomVerticalFlip(),
-        transforms.RandomPerspective(),
-        transforms.ToTensor()
-        # transforms.Normalize([0.414289], [0.215069])
-    ])
+    # data_transform = transforms.Compose([
+    #     # utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(32, 32)),
+    #     transforms.RandomHorizontalFlip(),
+    #     transforms.RandomVerticalFlip(),
+    #     transforms.RandomPerspective(),
+    #     transforms.ToTensor(),
+    #     transforms.Normalize([0.414289], [0.215069])
+    # ])
+    data_transform = {
+        'train': transforms.Compose([
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomVerticalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize([0.414289], [0.215069])
+        ]),
+        'test': transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize([0.414289], [0.215069])
+        ])}
     # log是tensorboard的记录路径
     utils.path_exist(args.log_path)
     writer = SummaryWriter(log_dir=args.log_path)
@@ -53,12 +64,12 @@ def main(args):
     test_result_pd = pd.read_csv(test_result_path) if os.path.exists(
         test_result_path) else pd.DataFrame()
     # 训练集和测试集的路径
-    trian_path = os.path.join(args.dataset, 'train')
-    test_path = os.path.join(args.dataset, 'test')
+    trian_path = os.path.join(args.dataset, 'test')
+    test_path = os.path.join(args.dataset, 'train')
     trainset = torchvision.datasets.ImageFolder(
-        root=trian_path, transform=data_transform, loader=utils.gray_loader)
+        root=trian_path, transform=data_transform['train'], loader=utils.gray_loader)
     testset = torchvision.datasets.ImageFolder(
-        root=test_path, transform=data_transform, loader=utils.gray_loader)
+        root=test_path, transform=data_transform['test'], loader=utils.gray_loader)
     # 类别的标签, test时保存结果需要对应各个类别
     classes = trainset.classes
     train_loader = DataLoader(dataset=trainset, batch_size=batch_size, shuffle=True,
@@ -103,7 +114,7 @@ def main(args):
     #         (1 - args.lrf) + args.lrf  # cosine
     # scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
     scheduler = lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=args.epoch)
+        optimizer, T_max=int(1.5 * args.epoch))
     # scheduler = lr_scheduler.StepLR(
     #     optimizer=optimizer, step_size=20, gamma=0.5)
     # def lf(x):
@@ -115,8 +126,8 @@ def main(args):
     # 设置loss function
     # loss_function = nn.CrossEntropyLoss() if loss_weights is None else nn.CrossEntropyLoss(
     #     weight=torch.tensor(loss_weights))
-    # loss_function = utils.FocalLoss(gamma=8, reduction='sum')
-    loss_function = torch.nn.CrossEntropyLoss()
+    loss_function = utils.FocalLoss(gamma=8, reduction='mean')
+    # loss_function = torch.nn.CrossEntropyLoss()
     for epoch in range(epoch_offset, epoch_offset + args.epoch):
         # train
         train_loss, train_acc = train_utils.train_one_epoch(
@@ -135,7 +146,7 @@ def main(args):
             loss_function=loss_function)
         # 学习率的调整
         # scheduler.step(test_loss)
-        if (epoch * 1.0 - epoch_offset) / args.epoch > 0.5:
+        if (epoch * 1.0 - epoch_offset) / args.epoch > 0.25:
             scheduler.step()
 
         # 保存测试集的测试结果

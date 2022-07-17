@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 19:45:12
-LastEditTime : 2022-07-16 23:41:05
+LastEditTime : 2022-07-17 15:55:17
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -189,21 +189,22 @@ class APM(nn.Module):
 
     def __init__(self, in_chs: int, out_chs: int):
         super(APM, self).__init__()
-        self.conv_blocks_1 = ConvBlock(in_chs, 8, kernel_size=13, stride=3, padding=1, dilation=1,
+        self.conv_blocks_1 = ConvBlock(in_chs, 4, kernel_size=13, stride=2, padding=1, dilation=1,
                                        norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.MaxPool2d(3, stride=1))
-        self.conv_blocks_2 = ConvBlock(8, 32, kernel_size=3, stride=1, padding=1, dilation=1,
-                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.AvgPool2d(3, stride=1))
-        self.conv_blocks_3 = ConvBlock(32, 64, kernel_size=3, stride=1, padding=1, dilation=1,
+        self.conv_blocks_2 = ConvBlock(4, 16, kernel_size=5, stride=2, padding=1, dilation=1,
                                        norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.MaxPool2d(3, stride=1))
-        self.res_blocks_1 = Residual(64, 64, kernel_size=[3, 3], stride=[1, 1], padding=[1, 1],
+        self.conv_blocks_3 = ConvBlock(16, 32, kernel_size=3, stride=1, padding=1, dilation=1,
+                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.MaxPool2d(3, stride=1))
+        self.res_blocks_1 = Residual(32, 32, kernel_size=[3, 3], stride=[1, 1], padding=[1, 1],
                                      downsample=False)
-        self.res_blocks_2 = Residual(64, 64, kernel_size=[3, 3], stride=[1, 1], padding=[1, 1],
+        self.res_blocks_2 = Residual(32, 32, kernel_size=[3, 3], stride=[1, 1], padding=[1, 1],
                                      downsample=False)
-        self.cbam_blocks = CBAM(64)
-        self.conv_blocks_4 = ConvBlock(64, 16, kernel_size=3, stride=1, padding=1, dilation=1,
-                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=None)
-        self.conv_blocks_5 = ConvBlock(16, out_chs, kernel_size=3, stride=1, padding=1, dilation=1,
-                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=None)
+        # self.res_blocks_2 = nn.Identity()
+        self.cbam_blocks = CBAM(32)
+        self.conv_blocks_4 = ConvBlock(32, 8, kernel_size=3, stride=1, padding=1, dilation=1,
+                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.MaxPool2d(3, stride=1))
+        self.conv_blocks_5 = ConvBlock(8, out_chs, kernel_size=3, stride=1, padding=1, dilation=1,
+                                       norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.MaxPool2d(3, stride=1))
 
     def forward(self, x):
         x = self.conv_blocks_1(x)
@@ -241,10 +242,10 @@ class MultiClassification(nn.Module):
         self.pool_upsample = nn.Upsample(size=pool_size, mode=pool_type)
 
     def forward(self, x):
-        x = self.apm(x)
+        apm_x = self.apm(x)
         x_upsample = self.pool_upsample(x)
-        x_max = self.max_pool(x)
-        x_avg = self.avg_pool(x)
+        x_max = self.max_pool(apm_x)
+        x_avg = self.avg_pool(apm_x)
         x = torch.concat([x_upsample, x_avg, x_max], dim=1)
         x = self.backbone(x)
         x = self.dropout(self.classifier(x))
@@ -264,6 +265,27 @@ def test_apm():
 
 
 def test_model_modify():
-    net = MultiClassification(backbone='tf_efficientnetv2_b3',
+    net = MultiClassification(backbone='tf_efficientnet_b3',
                               pretrain=True, num_classes=3)
     print(net)
+
+
+def test_model_repvgg():
+    input = torch.randn(1, 3, 224, 224)
+    from thop import profile, clever_format
+    net = timm.create_model(model_name='repvgg_b0',
+                            pretrained=True, num_classes=3)
+    print(net)
+    macs, params = profile(net, inputs=(input, ))
+    macs, params = clever_format([macs, params], "%.4f")
+    print(macs)
+    print(params)
+    # repvgg_b0
+    # 3.3960G
+    # 14.5056M
+    # tf_efficientnetv2_b3
+    # 1.5538G
+    # 12.7488M
+    # tf_efficientnet_b3
+    # 990.3157M
+    # 10.6707M
