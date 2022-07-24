@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-17 15:23:13
+LastEditTime : 2022-07-24 20:12:50
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -126,7 +126,7 @@ def main(args):
     # 设置loss function
     # loss_function = nn.CrossEntropyLoss() if loss_weights is None else nn.CrossEntropyLoss(
     #     weight=torch.tensor(loss_weights))
-    loss_function = utils.FocalLoss(gamma=8, reduction='mean')
+    loss_function = utils.FocalLoss(gamma=8, reduction='sum')
     # loss_function = torch.nn.CrossEntropyLoss()
     for epoch in range(epoch_offset, epoch_offset + args.epoch):
         # train

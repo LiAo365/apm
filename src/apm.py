@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 19:45:12
-LastEditTime : 2022-07-06 21:49:26
+LastEditTime : 2022-07-24 21:02:00
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -191,7 +191,7 @@ class APM(nn.Module):
         super(APM, self).__init__()
         self.conv_blocks_1 = ConvBlock(in_chs, 4, kernel_size=13, stride=2, padding=1, dilation=1,
                                        norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.MaxPool2d(3, stride=1))
-        self.conv_blocks_2 = ConvBlock(4, 16, kernel_size=5, stride=2, padding=1, dilation=1,
+        self.conv_blocks_2 = ConvBlock(4, 16, kernel_size=7, stride=2, padding=1, dilation=1,
                                        norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.MaxPool2d(3, stride=1))
         self.conv_blocks_3 = ConvBlock(16, 32, kernel_size=3, stride=2, padding=1, dilation=1,
                                        norm_layer=nn.BatchNorm2d, act_layer=nn.SiLU, pool_layer=nn.MaxPool2d(3, stride=1))
@@ -218,8 +218,8 @@ class APM(nn.Module):
 
 
 class MultiClassification(nn.Module):
-    def __init__(self, backbone='tf_efficientnetv2_b0', pretrain=True, num_classes=7, pool=False,
-                 pool_size=(300, 300), pool_type='max'):
+    def __init__(self, backbone='tf_efficientnetv2_b3', pretrain=True, num_classes=7, pool=True,
+                 pool_size=(300, 300), pool_type='bilinear', drop_out=0.5):
         super(MultiClassification, self).__init__()
 
         self.apm = APM(1, 3)
@@ -232,11 +232,15 @@ class MultiClassification(nn.Module):
             self.pool = nn.AdaptiveMaxPool2d(pool_size)
         elif pool and pool_type in ['nearest', 'linear', 'bilinear', 'bicubic', 'trilinear']:
             self.pool = nn.Upsample(size=pool_size, mode=pool_type)
+        self.classifier = self.backbone.classifier
+        self.backbone.classifier = nn.Identity()
+        self.dropout = nn.Dropout(p=drop_out)
 
     def forward(self, x):
         x = self.apm(x)
         x = self.pool(x)
         x = self.backbone(x)
+        x = self.dropout(self.classifier(x))
         return x
 
 

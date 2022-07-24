@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 23:42:53
-LastEditTime : 2022-07-14 22:00:14
+LastEditTime : 2022-07-24 21:00:20
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -18,24 +18,24 @@ if __name__ == '__main__':
     utils.setup_seed(100)
     parser = argparse.ArgumentParser()
     # 网络模型参数
-    parser.add_argument('--backbone', type=str, default='tf_efficientnetv2_b2')
+    parser.add_argument('--backbone', type=str, default='tf_efficientnetv2_b3')
     parser.add_argument('--backbone_pretrain', type=bool, default=True)
-    parser.add_argument('--pool', type=bool, default=False)
+    parser.add_argument('--pool', type=bool, default=True)
     parser.add_argument('--pool_size', type=tuple, default=(320, 320))
     parser.add_argument('--pool_type', type=str,
-                        default='avg', help='must one of (max, avg)')
+                        default='avg', help='must one of (max, avg, nearest, linear, bilinear, bicubic, trilinear)')
     parser.add_argument('--weight_decay', type=float, default=1e-5)
     # 分类数目
     parser.add_argument('--num_classes', type=int, default=3)
 
     # 训练epoch
-    parser.add_argument('--epoch', type=int, default=100)
+    parser.add_argument('--epoch', type=int, default=200)
     parser.add_argument('--epoch_offset', type=int, default=0)
     # 超参数, 依据显存设置
     parser.add_argument('--batch_size', type=int,
                         default=16, help='decide by GPU RAM')
     # 学习率参数
-    parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--lr', type=float, default=0.005)
     # used for RangeLars
     parser.add_argument('--lrf', type=float, default=0.005)
     parser.add_argument('--ann_start', type=float, default=0.5)

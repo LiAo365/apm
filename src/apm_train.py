@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-14 23:26:57
+LastEditTime : 2022-07-24 20:14:54
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -13,7 +13,7 @@ import torch
 import pandas as pd
 from torchvision import transforms
 from torch.utils.data import DataLoader
-# from torchtools.optim import RangerLars
+from torchtools.optim import RangerLars
 from torch.optim import lr_scheduler
 from sklearn.metrics import classification_report
 from torch.utils.tensorboard import SummaryWriter
@@ -27,10 +27,18 @@ warnings.filterwarnings('ignore')
 def main(args):
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
     # 定义数据预处理
-    data_transform = transforms.Compose([
-        utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(64, 64)),
-        transforms.ToTensor()
-    ])
+    data_transform = {
+        'train': transforms.Compose([
+            # utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(64, 64)),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomVerticalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize([0.414289], [0.215069])
+        ]),
+        'test': transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize([0.414289], [0.215069])
+        ])}
     # log是tensorboard的记录路径
     utils.path_exist(args.log_path)
     writer = SummaryWriter(log_dir=args.log_path)
@@ -52,9 +60,9 @@ def main(args):
     class_to_idx = allsamples.get_class_to_idx()
     train_samples, test_samples = allsamples.split(ratio=0.8)
     trainset = utils.SplitDataSet(
-        classes=classes, class_to_idx=class_to_idx, samples=train_samples, transform=data_transform, loader=utils.gray_loader)
+        classes=classes, class_to_idx=class_to_idx, samples=train_samples, transform=data_transform['train'], loader=utils.gray_loader)
     testset = utils.SplitDataSet(
-        classes=classes, class_to_idx=class_to_idx, samples=test_samples, transform=data_transform, loader=utils.gray_loader)
+        classes=classes, class_to_idx=class_to_idx, samples=test_samples, transform=data_transform['test'], loader=utils.gray_loader)
     train_loader = DataLoader(dataset=trainset, batch_size=batch_size, shuffle=True,
                               pin_memory=True, num_workers=num_workers)
     test_loader = DataLoader(dataset=testset, batch_size=batch_size, shuffle=True,
@@ -78,10 +86,10 @@ def main(args):
 
     # 定义optimizer
     # total_steps = int(trainset.__len__() / batch_size) * args.epoch
-    optimizer = torch.optim.Adam(
-        model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    # optimizer = RangerLars(model.parameters(), lr=args.lr,
-    #                        weight_decay=args.weight_decay)
+    # optimizer = torch.optim.Adam(
+    #     model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    optimizer = RangerLars(model.parameters(), lr=args.lr,
+                           weight_decay=args.weight_decay)
     # optimizer = torch.optim.SGD(
     #     params=model.parameters(), lr=args.lr, momentum=0.95, weight_decay=args.weight_decay)
     # 学习率随着训练epoch周期变化
@@ -91,8 +99,10 @@ def main(args):
     #     optimizer=optimizer, T_0=5, T_mult=2, eta_min=1e-5)
     # scheduler = utils.flat_and_anneal(
     #     optimizer=optimizer, total_steps=total_steps, ann_start=args.ann_start)
-    scheduler = lr_scheduler.StepLR(
-        optimizer=optimizer, step_size=20, gamma=0.5)
+    # scheduler = lr_scheduler.StepLR(
+    #     optimizer=optimizer, step_size=20, gamma=0.5)
+    scheduler = lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=int(1.5 * args.epoch))
     # 设置loss function
     # loss_function = nn.CrossEntropyLoss() if loss_weights is None else nn.CrossEntropyLoss(
     #     weight=torch.tensor(loss_weights))
@@ -117,7 +127,9 @@ def main(args):
             loss_function=loss_function)
         # 学习率的调整
         # scheduler.step(test_loss)
-        scheduler.step()
+        # scheduler.step()
+        if (epoch * 1.0 - epoch_offset) / args.epoch > 0.25:
+            scheduler.step()
 
         # 保存测试集的测试结果
         epoch_test_result_dict = classification_report(
