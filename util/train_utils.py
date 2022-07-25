@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-10 23:50:11
-LastEditTime : 2022-07-14 22:47:25
+LastEditTime : 2022-07-25 10:51:36
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -12,7 +12,7 @@ from typing import Dict, Tuple
 import torch
 # import torch.nn as nn
 import numpy as np
-from src import utils
+from . import utils
 import warnings
 warnings.filterwarnings('ignore')
 

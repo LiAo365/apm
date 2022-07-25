@@ -1,0 +1,19 @@
+experimentName: apm
+searchSpaceFile: /data/liao/code/apm/json/apm.json
+trialCommand: python ../apm_run.py
+trialCodeDirectory: .
+trialGpuNumber: 1  # 每个实验要几块gpu
+trialConcurrency: 3
+
+maxTrialNumber: 100
+experimentWorkingDirectory: /data/liao/nni-experiments
+tuner:
+  name: TPE
+  classArgs:
+    optimize_mode: maximize
+
+trainingService:
+  platform: local
+  useActiveGpu: True
+  maxTrialNumberPerGpu: 1  # 一个GPU允许运行的最多实验数
+  gpuIndices: "1, 2, 3"  # 使用的GPU编号

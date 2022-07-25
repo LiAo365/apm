@@ -1,0 +1,61 @@
+{
+    "backbone": {
+        "_type": "choice",
+        "_value": [
+            "tf_efficientnetv2_b1",
+            "tf_efficientnetv2_b2",
+            "tf_efficientnetv2_b3",
+            "tf_efficientnet_b2",
+            "tf_efficientnet_b3",
+            "tf_efficientnet_b1"
+        ]
+    },
+    "pool": {
+        "_type": "choice",
+        "_value": [
+            1
+        ]
+    },
+    "pool_size": {
+        "_type": "choice",
+        "_value": [
+            300,
+            320,
+            340,
+            360
+        ]
+    },
+    "pool_type": {
+        "_type": "choice",
+        "_value": [
+            "avg",
+            "max",
+            "bilinear"
+        ]
+    },
+    "lr": {
+        "_type": "choice",
+        "_value": [
+            1e-2,
+            5e-3,
+            1e-3,
+            8e-4
+        ]
+    },
+    "drop_rate": {
+        "_type": "choice",
+        "_value": [
+            0.5,
+            0.6,
+            0.7,
+            0.8
+        ]
+    },
+    "loss": {
+        "_type": "choice",
+        "_value": [
+            "focal",
+            "cross"
+        ]
+    }
+}

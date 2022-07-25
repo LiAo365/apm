@@ -3,13 +3,15 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-24 20:14:54
+LastEditTime : 2022-07-25 19:58:24
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
 
 import os
 import torch
+import nni
+import torch.nn as nn
 import pandas as pd
 from torchvision import transforms
 from torch.utils.data import DataLoader
@@ -19,7 +21,7 @@ from sklearn.metrics import classification_report
 from torch.utils.tensorboard import SummaryWriter
 from util import utils
 from util import train_utils
-from src import apm
+from . import apm
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -29,29 +31,32 @@ def main(args):
     # 定义数据预处理
     data_transform = {
         'train': transforms.Compose([
-            # utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(64, 64)),
+            utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(64, 64)),
             transforms.RandomHorizontalFlip(),
             transforms.RandomVerticalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize([0.414289], [0.215069])
+            transforms.ToTensor()
         ]),
         'test': transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize([0.414289], [0.215069])
-        ])}
+            utils.SelfCLAHE(clip_limit=2.0, tile_grid_size=(64, 64)),
+            transforms.ToTensor()])}
+    # 运行结果保存路径
+    utils.path_exist(args.save_path)
+    log_path = os.path.join(args.save_path, 'log')
+    utils.path_exist(log_path)
     # log是tensorboard的记录路径
-    utils.path_exist(args.log_path)
-    writer = SummaryWriter(log_dir=args.log_path)
+    writer = SummaryWriter(log_dir=log_path)
     # result是指在测试集上的true label和predict label保存路径, 以及测试结果保存路径
-    utils.path_exist(args.result_path)
+    result_path = os.path.join(args.save_path, 'result')
+    utils.path_exist(result_path)
     # 最优权重保存路径
-    utils.path_exist(args.weight_path)
+    weight_path = os.path.join(args.save_path, 'weight')
+    utils.path_exist(weight_path)
     # 数据加载的线程数
-    num_workers = 8
+    num_workers = 4
     # 超参数
     batch_size = args.batch_size
     # 保存测试集上的结果
-    test_result_path = os.path.join(args.result_path, 'test_result.csv')
+    test_result_path = os.path.join(result_path, 'test_result.csv')
     test_result_pd = pd.read_csv(test_result_path) if os.path.exists(
         test_result_path) else pd.DataFrame()
     allsamples = utils.AllImageFolder(root=args.dataset)
@@ -77,36 +82,37 @@ def main(args):
             num_classes=args.num_classes,
             pool=args.pool,
             pool_size=args.pool_size,
-            pool_type=args.pool_type)
+            pool_type=args.pool_type,
+            drop_rate=args.drop_rate)
         return model
-    # 如果指定weight_path则依据weight_path加载权重进行训练
-    load_weight_path = args.load_weight_path
-    model = new_module() if load_weight_path is None else torch.load(load_weight_path)
+    # 如果指定load_weight则依据weight_path加载权重进行训练
+    model = new_module() if not args.load_weight else torch.load(args.load_weight_path)
     model = model.to(device)
 
     # 定义optimizer
     # total_steps = int(trainset.__len__() / batch_size) * args.epoch
     # optimizer = torch.optim.Adam(
     #     model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    optimizer = RangerLars(model.parameters(), lr=args.lr,
-                           weight_decay=args.weight_decay)
-    # optimizer = torch.optim.SGD(
-    #     params=model.parameters(), lr=args.lr, momentum=0.95, weight_decay=args.weight_decay)
+    optimizer = RangerLars(model.parameters(), lr=args.lr)
     # 学习率随着训练epoch周期变化
-    # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10,
-    #                                            verbose=False, cooldown=5, min_lr=1e-04, eps=1e-08, threshold=0.0001, threshold_mode='rel')
     # scheduler = lr_scheduler.CosineAnnealingWarmRestarts(
     #     optimizer=optimizer, T_0=5, T_mult=2, eta_min=1e-5)
-    # scheduler = utils.flat_and_anneal(
-    #     optimizer=optimizer, total_steps=total_steps, ann_start=args.ann_start)
     # scheduler = lr_scheduler.StepLR(
     #     optimizer=optimizer, step_size=20, gamma=0.5)
     scheduler = lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=int(1.5 * args.epoch))
+        optimizer, T_max=int(1.6 * args.epoch))
     # 设置loss function
-    # loss_function = nn.CrossEntropyLoss() if loss_weights is None else nn.CrossEntropyLoss(
-    #     weight=torch.tensor(loss_weights))
-    loss_function = utils.FocalLoss(gamma=4)
+    loss_function = None
+    # 交叉熵损失函数的权重-一般用于类别不平衡问题
+    loss_weights = None
+    if args.loss == 'focal':
+        loss_function = utils.FocalLoss(gamma=args.focal_gamma)
+    elif args.loss == 'cross':
+        loss_function = nn.CrossEntropyLoss() if loss_weights is None else nn.CrossEntropyLoss(
+            weight=torch.tensor(loss_weights))
+    else:
+        raise NotImplementedError(
+            'For loss function [{}] not implemented.'.format(args.loss))
     best_acc = 0.0
     epoch_offset = args.epoch_offset
     for epoch in range(epoch_offset, epoch_offset + args.epoch):
@@ -128,7 +134,7 @@ def main(args):
         # 学习率的调整
         # scheduler.step(test_loss)
         # scheduler.step()
-        if (epoch * 1.0 - epoch_offset) / args.epoch > 0.25:
+        if (epoch * 1.0 - epoch_offset) / args.epoch > 0.2:
             scheduler.step()
 
         # 保存测试集的测试结果
@@ -143,23 +149,32 @@ def main(args):
         epoch_preds = pd.DataFrame(epoch_test_result)
         epoch_preds.to_csv(os.path.join(
             args.result_path, 'epoch_{:d}_test_result.csv'.format(epoch)), index=True)
+        # 超惨调优中间属性可视化需要的数据
+        metric = {
+            'default': test_acc,  # nni要求必须是default, 其他的key-value可以用于可视化
+            'train_loss': train_loss,
+            'train_acc': train_acc,
+            'test_loss': test_loss,
+            'test_acc': test_acc,
+            'learning_rate': optimizer.param_groups[0]['lr']}
         # 往TensorBoard的log文件写数据
         writer.add_scalar('loss/train_loss', train_loss, epoch)
         writer.add_scalar('accuracy/train_acc', train_acc, epoch)
         writer.add_scalar('loss/test_loss', test_loss, epoch)
         writer.add_scalar('accuracy/test_acc', test_acc, epoch)
         writer.add_scalar(
-            'learning_rate', optimizer.param_groups[0]['lr'], epoch)
+            'learning_rate', metric['learning_rate'], epoch)
         for tags in ['precision', 'recall', 'f1-score']:
             for label in classes:
                 writer.add_scalar(tags + '/' + label,
                                   epoch_test_result_dict[label][tags], epoch)
-
-            # 保存训练完之后的最优模型权重
+        nni.report_intermediate_result(metric)
+        # 保存训练完之后的最优模型权重
         if test_acc > best_acc:
             best_acc = test_acc
             torch.save(model, os.path.join(
-                args.weight_path, 'best_weight.pth'))
+                weight_path, 'best_weight.pth'))
+    nni.report_final_result(best_acc)
 
 
 def test_classification_report():

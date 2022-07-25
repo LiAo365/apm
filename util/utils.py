@@ -3,11 +3,12 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 19:52:11
-LastEditTime : 2022-07-16 12:02:02
+LastEditTime : 2022-07-24 22:20:59
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
 import os
+import random
 import cv2
 import shutil
 import torch
@@ -22,11 +23,12 @@ from torch.nn import functional as F
 
 
 def setup_seed(seed: int = 0):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
     torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
-    np.random.seed(seed)
-    torch.backends.cudnn.deterministic = True
 
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp',
