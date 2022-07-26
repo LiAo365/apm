@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-25 19:58:24
+LastEditTime : 2022-07-25 22:45:53
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -144,11 +144,11 @@ def main(args):
         test_result_pd = test_result_pd.append(
             pd.DataFrame(epoch_test_dataframe))
         test_result_pd.to_csv(os.path.join(
-            args.result_path, 'test_result.csv'), index=True)
+            result_path, 'test_result.csv'), index=True)
         # 保存当前epoch测试preds与labels
         epoch_preds = pd.DataFrame(epoch_test_result)
         epoch_preds.to_csv(os.path.join(
-            args.result_path, 'epoch_{:d}_test_result.csv'.format(epoch)), index=True)
+            result_path, 'epoch_{:d}_test_result.csv'.format(epoch)), index=True)
         # 超惨调优中间属性可视化需要的数据
         metric = {
             'default': test_acc,  # nni要求必须是default, 其他的key-value可以用于可视化

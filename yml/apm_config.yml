@@ -5,7 +5,7 @@ trialCodeDirectory: .
 trialGpuNumber: 1  # 每个实验要几块gpu
 trialConcurrency: 3
 
-maxTrialNumber: 100
+maxTrialNumber: 120
 experimentWorkingDirectory: /data/liao/nni-experiments
 tuner:
   name: TPE

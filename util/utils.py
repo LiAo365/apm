@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 19:52:11
-LastEditTime : 2022-07-24 22:20:59
+LastEditTime : 2022-07-26 14:55:25
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -378,7 +378,7 @@ class FocalLoss(nn.Module):
     def __init__(self,
                  alpha: Optional[torch.Tensor] = None,
                  gamma: float = 2.,
-                 reduction: str = 'sum',
+                 reduction: str = 'mean',
                  ignore_index: int = -100,
                  add_cross_entry=False,
                  cross_entry_weight=None):
