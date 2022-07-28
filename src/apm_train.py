@@ -3,7 +3,7 @@
 '''
 Author       : LiAo
 Date         : 2022-07-05 20:08:25
-LastEditTime : 2022-07-25 22:45:53
+LastEditTime : 2022-07-26 18:35:34
 LastAuthor   : LiAo
 Description  : Please add file description
 '''
@@ -52,7 +52,7 @@ def main(args):
     weight_path = os.path.join(args.save_path, 'weight')
     utils.path_exist(weight_path)
     # 数据加载的线程数
-    num_workers = 4
+    num_workers = 8
     # 超参数
     batch_size = args.batch_size
     # 保存测试集上的结果
